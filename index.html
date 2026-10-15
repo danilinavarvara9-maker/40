@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конструктор промтов для веб-игр · 7 этапов</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/manrope@5.0.20/index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/manrope@5.0.20/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/manrope@5.0.20/800.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.20/index.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+ --bg:#eef7f1;--card:#fff;--ink:#132a1c;--muted:#5d7468;
+ --brand:#15a34a;--brand-d:#0f6b36;--brand-l:#e6f7ec;--brand-ll:#f4fbf6;
+ --teal:#0d9488;--mint:#10b981;--ok:#15803d;--ok-l:#dcfce7;
+ --warn:#b45309;--warn-l:#fef3e2;--err:#b91c1c;--err-l:#fdecec;
+ --line:#dcebe1;--line-h:#a9d8bc;--r:18px;
+ --sh-s:0 1px 2px rgba(15,60,32,.05),0 4px 14px rgba(15,60,32,.05);
+ --sh:0 2px 6px rgba(15,60,32,.05),0 14px 34px rgba(15,60,32,.08);
+ --sh-lg:0 4px 10px rgba(15,60,32,.06),0 24px 56px rgba(15,60,32,.16);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Manrope',system-ui,sans-serif;color:var(--ink);line-height:1.5;min-height:100vh;padding-bottom:70px;overflow-wrap:break-word;
+ background:radial-gradient(1100px 520px at 100% -8%,#cdeeda 0%,rgba(205,238,218,0) 62%),radial-gradient(900px 420px at -8% 6%,#cdeee7 0%,rgba(205,238,231,0) 58%),var(--bg)}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,h4{text-wrap:balance}
+::selection{background:#a7e8c1;color:#0c3320}
+:focus-visible{outline:3px solid #7ed6a4;outline-offset:2px}
+.topbar{position:relative;overflow:hidden;background:linear-gradient(118deg,#0f4d2a,#15803d 42%,#17a86a 78%,#3ddc9a);color:#fff;padding:16px 22px 18px;box-shadow:0 12px 34px rgba(15,77,42,.3)}
+.topbar::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.16) 1.5px,transparent 1.6px);background-size:20px 20px;opacity:.7;pointer-events:none}
+.topbar-in{max-width:1560px;margin:0 auto;position:relative;z-index:2;display:flex;gap:14px 18px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;gap:13px;align-items:center;flex:1 1 340px;min-width:0}
+.brand-mark{width:50px;height:50px;border-radius:16px;background:rgba(255,255,255,.2);flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.36)}
+.brand h1{font-size:clamp(16px,2.1vw,22px);font-weight:800;letter-spacing:-.5px;line-height:1.2}
+.brand p{font-size:12.4px;opacity:.92;font-weight:600;margin-top:3px}
+.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.gbtn{border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.16);color:#fff;padding:9px 14px;border-radius:12px;font-weight:800;font-size:12.6px;line-height:1.2;transition:.18s;display:inline-flex;gap:7px;align-items:center;min-height:40px;max-width:100%}
+.gbtn:hover{background:rgba(255,255,255,.3);transform:translateY(-1px)}
+.gbtn.solid{background:#fff;color:var(--brand-d);border-color:#fff}
+.gbtn.gold{background:linear-gradient(135deg,#f6c453,#d9a441);border-color:transparent;color:#3a2a08;box-shadow:0 8px 20px rgba(217,164,65,.4)}
+.prog-wrap{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.34);padding:8px 14px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
+.prog-bar{width:78px;height:7px;border-radius:99px;background:rgba(255,255,255,.32);overflow:hidden}
+.prog-fill{height:100%;width:0;background:linear-gradient(90deg,#d9f99d,#fde68a);transition:width .45s cubic-bezier(.2,.8,.3,1)}
+.stepper{position:sticky;top:0;z-index:50;background:rgba(248,253,249,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);box-shadow:0 6px 18px rgba(15,60,32,.06)}
+.stepper-in{max-width:1560px;margin:0 auto;padding:9px 18px;display:flex;gap:7px;align-items:center;overflow-x:auto;scrollbar-width:none}
+.stepper-in::-webkit-scrollbar{display:none}
+.st{flex:none;display:flex;gap:8px;align-items:center;border:1.5px solid var(--line);background:#fff;border-radius:13px;padding:7px 11px;transition:.18s;min-height:42px}
+.st:hover{border-color:var(--line-h)}
+.st .n{width:24px;height:24px;flex:none;border-radius:8px;background:var(--brand-l);color:var(--brand-d);display:grid;place-items:center;font-weight:800;font-size:11.6px}
+.st b{font-size:12.2px;font-weight:800;white-space:nowrap}
+.st.on{border-color:var(--brand);background:linear-gradient(135deg,#eaf8ef,#dff5e7);box-shadow:0 6px 16px rgba(21,163,74,.16)}
+.st.on .n{background:linear-gradient(135deg,var(--brand),var(--teal));color:#fff}
+.st.done .n{background:var(--ok-l);color:var(--ok)}
+.st-nav{margin-left:auto;display:flex;gap:7px;flex:none;padding-left:6px}
+.layout{max-width:1560px;margin:18px auto 0;padding:0 18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(400px,560px);gap:20px;align-items:start}
+.panes{min-width:0}
+.pane{display:none;flex-direction:column;gap:14px}
+.pane.on{display:flex;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-s);overflow:hidden;transition:box-shadow .2s}
+.card:hover{box-shadow:var(--sh)}
+.card-head{display:flex;gap:12px;align-items:center;padding:14px 17px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fcfffd,#f2f9f5);position:relative;flex-wrap:wrap}
+.card-head::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--brand),var(--teal))}
+.card-head h2{font-size:15.4px;font-weight:800;letter-spacing:-.2px}
+.card-head .sub{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.head-extra{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.card-body{padding:16px 17px}
+.field{margin-bottom:14px;min-width:0}
+.field:last-child{margin-bottom:0}
+.label{display:block;font-size:11.2px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:7px}
+.hint{font-size:11.8px;color:var(--muted);margin-top:7px;font-weight:600;line-height:1.5}
+input[type=text],input[type=number],select,textarea{width:100%;min-width:0;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:#fbfefc;font-weight:600;font-size:13.6px;transition:.16s;outline:none}
+select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5L6 6.5L11 1.5' stroke='%235d7468' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer}
+textarea{resize:vertical;min-height:88px;line-height:1.7;font-weight:500}
+input:hover,select:hover,textarea:hover{border-color:var(--line-h)}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);background:#fff;box-shadow:0 0 0 4px rgba(21,163,74,.13)}
+input[readonly]{background:#f1f7f3;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.grid2>*,.grid3>*,.grid4>*{min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;width:0;height:0}
+.chip span{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:8px 11px;border:1.5px solid var(--line);border-radius:11px;background:#fbfefc;font-weight:800;font-size:12.6px;cursor:pointer;transition:.16s;user-select:none;white-space:nowrap;line-height:1.15}
+.chip span:hover{border-color:var(--line-h);background:var(--brand-ll)}
+.chip input:checked+span{background:linear-gradient(135deg,var(--brand),var(--teal));color:#fff;border-color:transparent;box-shadow:0 5px 12px rgba(21,163,74,.3)}
+.two-col{display:grid;grid-template-columns:minmax(0,1fr) 292px;gap:14px;align-items:start}
+.search{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.search input{flex:1 1 190px}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(182px,1fr));gap:10px;max-height:560px;overflow:auto;padding:2px}
+.pick{position:relative;min-width:0}
+.pick input{position:absolute;opacity:0;width:0;height:0}
+.pick>span{display:block;padding:11px;border:1.5px solid var(--line);border-radius:15px;background:#fbfefc;cursor:pointer;transition:.16s;height:100%}
+.pick>span:hover{border-color:var(--line-h);transform:translateY(-2px);box-shadow:var(--sh-s)}
+.pick input:checked+span{border-color:var(--brand);background:var(--brand-l);box-shadow:0 0 0 3px rgba(21,163,74,.12)}
+.pick .p-n{display:flex;gap:6px;align-items:center;font-weight:800;font-size:12.8px;line-height:1.25}
+.pick .p-n .ck{margin-left:auto;width:18px;height:18px;border-radius:6px;border:2px solid #c2d8ca;background:#fff;flex:none;display:grid;place-items:center}
+.pick input:checked+span .ck{background:linear-gradient(135deg,var(--brand),var(--teal));border-color:transparent}
+.pick input:checked+span .ck svg{opacity:1}
+.pick .ck svg{opacity:0;transition:.16s}
+.pick .p-d{display:block;font-size:11.2px;color:var(--muted);font-weight:600;margin-top:4px;line-height:1.4}
+.pick .p-pal{display:flex;gap:3px;margin-top:8px}
+.pick .p-pal i{width:100%;height:16px;border-radius:5px;border:1px solid rgba(0,0,0,.08)}
+.pick .p-tag{display:inline-block;font-size:9.8px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--teal);background:var(--brand-l);padding:2px 7px;border-radius:99px;margin-top:7px}
+.pick .p-mech{display:block;font-size:11px;color:var(--brand-d);font-weight:700;margin-top:5px;line-height:1.4}
+.mini{display:grid;grid-template-columns:repeat(auto-fill,minmax(226px,1fr));gap:8px}
+.chk{position:relative;min-width:0}
+.chk input{position:absolute;opacity:0;width:0;height:0}
+.chk>span{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border:1.5px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;transition:.16s;font-weight:700;font-size:12.3px;line-height:1.4;height:100%;overflow-wrap:anywhere}
+.chk .box{width:19px;height:19px;flex:none;border-radius:7px;border:2px solid #c2d8ca;background:#fff;display:grid;place-items:center;transition:.16s}
+.chk .box svg{opacity:0;transform:scale(.4);transition:.16s}
+.chk .tx small{display:block;font-weight:600;color:var(--muted);font-size:11px;margin-top:2px;line-height:1.35}
+.chk>span:hover{border-color:var(--line-h);background:var(--brand-ll)}
+.chk input:checked+span{border-color:var(--brand);background:var(--brand-l)}
+.chk input:checked+span .box{background:linear-gradient(135deg,var(--brand),var(--teal));border-color:transparent}
+.chk input:checked+span .box svg{opacity:1;transform:scale(1)}
+.chkline{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1.5px solid var(--line);border-radius:13px;background:#fbfefc;font-weight:800;font-size:12.6px;cursor:pointer;line-height:1.4;margin-top:10px}
+.chkline:hover{border-color:var(--line-h)}
+.chkline input{width:19px;height:19px;accent-color:var(--brand);flex:none;margin-top:1px}
+.chkline small{display:block;color:var(--muted);font-weight:600;font-size:11.4px;margin-top:3px;line-height:1.45}
+.chkline:has(input:checked){border-color:#9fdcbc;background:#f1fbf5}
+.group{border:1.5px dashed var(--line-h);border-radius:16px;padding:13px;background:var(--brand-ll);margin-bottom:12px}
+.group:last-child{margin-bottom:0}
+.group h4{font-size:12.4px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#1c4630}
+.mini-pill{font-size:10.6px;background:#fff;border:1.5px solid var(--line);color:var(--muted);padding:3px 9px;border-radius:999px;font-weight:800;white-space:nowrap}
+.rowbtns{display:flex;gap:8px;flex-wrap:wrap}
+.rowbtns>*{flex:1 1 auto}
+.mini-btn{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:9px 12px;font-size:12.2px;font-weight:800;transition:.16s;display:inline-flex;gap:6px;align-items:center;justify-content:center;min-height:38px;line-height:1.25;text-align:center;max-width:100%}
+.mini-btn:hover{border-color:var(--brand);color:var(--brand-d);transform:translateY(-1px)}
+.mini-btn.pr{background:linear-gradient(135deg,var(--brand),var(--teal));color:#fff;border-color:transparent;box-shadow:0 6px 14px rgba(21,163,74,.3)}
+.mini-btn.gold{background:linear-gradient(135deg,#f6c453,#d9a441);color:#3a2a08;border-color:transparent}
+.mini-btn.sm{min-height:32px;padding:6px 9px;font-size:11.2px}
+.mini-btn.wide{width:100%}
+details.adv{border:1.5px solid var(--line);border-radius:14px;background:#fbfefc;overflow:hidden;margin-top:12px}
+details.adv>summary{padding:11px 13px;font-weight:800;font-size:12.4px;cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;color:var(--brand-d)}
+details.adv>summary::-webkit-details-marker{display:none}
+details.adv>summary::after{content:"v";margin-left:auto;transition:.2s}
+details.adv[open]>summary::after{transform:rotate(180deg)}
+details.adv .adv-b{padding:0 13px 13px}
+.task-row{border:1.5px solid var(--line);border-radius:13px;background:#fbfefc;margin-bottom:8px;overflow:hidden}
+.task-row:hover{border-color:var(--line-h)}
+.t-top{display:flex;gap:8px;align-items:center;padding:9px 10px;flex-wrap:wrap}
+.t-n{width:26px;height:26px;flex:none;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--teal));color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px}
+.t-type-badge{font-size:10.6px;font-weight:800;background:var(--brand-l);color:var(--brand-d);border-radius:99px;padding:4px 9px;white-space:nowrap;flex:none}
+.t-text-ro{flex:1 1 170px;font-size:12.8px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.t-mech{width:auto;flex:0 1 250px;min-width:180px;padding:8px 30px 8px 10px;font-size:12.2px}
+.t-img{font-size:10.4px;font-weight:800;background:var(--ok-l);color:var(--ok);border-radius:99px;padding:4px 9px;white-space:nowrap;flex:none}
+.mode-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.mode{position:relative}
+.mode input{position:absolute;opacity:0;width:0;height:0}
+.mode>span{display:block;padding:15px 13px;border:2px solid var(--line);border-radius:16px;background:#fbfefc;cursor:pointer;transition:.18s;height:100%;text-align:center}
+.mode>span:hover{border-color:var(--line-h);transform:translateY(-2px)}
+.mode input:checked+span{border-color:var(--brand);background:linear-gradient(180deg,#eef9f2,#e0f4e7);box-shadow:0 0 0 3px rgba(21,163,74,.12)}
+.mode .m-i{font-size:14px;font-weight:800;display:block;margin-bottom:7px;color:var(--brand-d)}
+.mode .m-n{display:block;font-weight:800;font-size:13px;line-height:1.3}
+.mode .m-d{display:block;font-size:11.2px;color:var(--muted);font-weight:600;margin-top:5px;line-height:1.4}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:11px;margin-top:4px}
+.slot{position:relative;border:1.5px solid var(--line);border-radius:16px;background:#fbfefc;overflow:hidden;transition:.18s;display:flex;flex-direction:column}
+.slot:hover{border-color:var(--line-h);box-shadow:var(--sh-s)}
+.slot.has{border-color:#9fdcbc;background:#f1fbf5}
+.slot-prev{height:96px;display:grid;place-items:center;background:linear-gradient(180deg,#f2f9f5,#e7f4ec);color:#9db8a8;font-size:12px;font-weight:800;position:relative;overflow:hidden}
+.slot-prev img{width:100%;height:100%;object-fit:cover;display:block}
+.slot-rm{position:absolute;top:7px;left:7px;width:25px;height:25px;border-radius:9px;border:none;background:rgba(15,42,28,.72);color:#fff;font-size:11px;display:none;place-items:center;z-index:3}
+.slot.has .slot-rm{display:grid}
+.slot-rm:hover{background:#b91c1c}
+.slot-info{padding:9px 10px 0}
+.slot-info b{display:block;font-size:12px;font-weight:800;line-height:1.3}
+.slot-info small{display:block;font-size:10.4px;color:var(--muted);font-weight:600;margin-top:2px;line-height:1.35}
+.slot-info .okline{color:var(--ok)}
+.slot-plus{margin:9px 10px 10px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--brand),var(--teal));color:#fff;font-weight:800;font-size:12px;min-height:36px;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 5px 12px rgba(21,163,74,.32);transition:.16s}
+.slot-plus:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.slot-tools{display:none;padding:0 9px 10px;gap:6px;flex-direction:column}
+.slot.open .slot-tools{display:flex}
+.slot-tools .r{display:flex;gap:6px}
+.slot-tools input[type=text]{padding:7px 9px;font-size:11.4px}
+.slot-tools .mini-btn{flex:1;padding:7px 8px;font-size:11px;min-height:34px}
+.drop{border:2px dashed var(--line-h);border-radius:16px;padding:20px 16px;text-align:center;background:var(--brand-ll);cursor:pointer;transition:.18s;font-weight:800;font-size:13.2px;color:var(--brand-d);line-height:1.4}
+.drop:hover,.drop.over{background:#e7f6ec;border-color:var(--brand)}
+.drop small{display:block;color:var(--muted);font-weight:600;font-size:11.6px;margin-top:6px;line-height:1.45}
+.shots{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.shot{position:relative;width:100px;height:100px;border-radius:13px;overflow:hidden;border:1.5px solid var(--line);background:#fff;box-shadow:var(--sh-s);flex:none}
+.shot img{width:100%;height:100%;object-fit:cover}
+.shot .rm{position:absolute;top:5px;right:5px;width:23px;height:23px;border-radius:50%;border:none;background:rgba(15,42,28,.75);color:#fff;font-size:11px;display:grid;place-items:center}
+.shot .nm{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.94);font-size:9.2px;font-weight:800;padding:3px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.pal-item{border:1.5px solid var(--line);border-radius:12px;padding:7px;background:#fbfefc;text-align:center}
+.pal-item small{display:block;font-size:9.8px;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}
+.pal-item input[type=color]{width:100%;height:32px;border:1.5px solid var(--line);border-radius:9px;background:#fff;padding:2px;cursor:pointer}
+.preview{position:sticky;top:70px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-lg);overflow:hidden;height:calc(100vh - 90px);min-height:520px;display:flex;flex-direction:column}
+.pv-head{padding:12px 13px 0;background:linear-gradient(180deg,#10281a,#1a4029);color:#fff;flex:none}
+.pv-title{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800;margin-bottom:10px;line-height:1.3}
+.pv-title .live{width:8px;height:8px;border-radius:50%;background:#5ee6a8;flex:none;box-shadow:0 0 0 4px rgba(94,230,168,.22);animation:pulse 2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(94,230,168,.05)}}
+.pv-title .tt{min-width:0;flex:1}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:none;background:rgba(255,255,255,.1);color:#c6ddce;padding:9px 12px;border-radius:11px 11px 0 0;font-weight:800;font-size:11.8px;white-space:nowrap;transition:.16s;flex:none;min-height:36px}
+.tab:hover{background:rgba(255,255,255,.2);color:#fff}
+.tab.active{background:#fff;color:var(--brand-d)}
+.pv-body{flex:1;min-height:0;background:#fff;overflow:auto}
+#output{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.9px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;padding:16px;color:#1d3526;min-height:100%;background-image:repeating-linear-gradient(180deg,transparent,transparent 24px,rgba(21,163,74,.055) 24px,rgba(21,163,74,.055) 25px)}
+.pv-foot{padding:10px 12px;border-top:1px solid var(--line);background:#f7fcf9;display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex:none}
+.pv-foot .stt{font-size:11px;color:var(--muted);font-weight:800;margin-left:auto;white-space:nowrap}
+.btn{border:1.5px solid var(--line);background:#fff;padding:9px 13px;border-radius:12px;font-weight:800;font-size:12.2px;transition:.16s;display:inline-flex;align-items:center;justify-content:center;gap:7px;line-height:1.2;min-height:40px;white-space:nowrap}
+.btn:hover{border-color:var(--brand);color:var(--brand-d);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(135deg,var(--brand),var(--teal));color:#fff;border-color:transparent;box-shadow:0 7px 18px rgba(21,163,74,.32)}
+.btn.primary:hover{filter:brightness(1.08);color:#fff}
+.result-hero{background:linear-gradient(135deg,#0f4d2a,#17a86a);color:#fff;border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+.result-hero h2{font-size:19px;font-weight:800;margin-bottom:6px}
+.result-hero p{font-size:13px;opacity:.94;font-weight:600;margin-bottom:14px;max-width:80ch;line-height:1.5}
+.rbtns{display:flex;gap:9px;flex-wrap:wrap}
+.rbtn{border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.16);color:#fff;border-radius:13px;padding:12px 15px;font-weight:800;font-size:13px;display:inline-flex;gap:8px;align-items:center;transition:.18s;min-height:46px;line-height:1.2;max-width:100%}
+.rbtn:hover{background:rgba(255,255,255,.3);transform:translateY(-2px)}
+.rbtn.solid{background:#fff;color:var(--brand-d);border-color:#fff}
+.rbtn.gold{background:linear-gradient(135deg,#f6c453,#d9a441);color:#3a2a08;border-color:transparent}
+.checklist{display:grid;gap:7px}
+.ck-item{display:flex;gap:9px;align-items:flex-start;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:#fbfefc;font-size:12.6px;font-weight:700;line-height:1.4}
+.ck-item .ic{flex:none;width:20px;height:20px;border-radius:7px;display:grid;place-items:center;font-size:11px;font-weight:800;background:var(--brand-l);color:var(--brand-d)}
+.ck-item.ok{border-color:#9fdcbc;background:#f1fbf5}
+.ck-item.ok .ic{background:var(--ok-l);color:var(--ok)}
+.ck-item.no .ic{background:var(--warn-l);color:var(--warn)}
+.modal{position:fixed;inset:0;background:rgba(10,30,18,.62);backdrop-filter:blur(4px);z-index:250;display:none;align-items:center;justify-content:center;padding:16px}
+.modal.open{display:flex}
+.modal-in{width:min(1150px,100%);height:min(800px,100%);background:#fff;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.modal-bar{display:flex;gap:9px;align-items:center;padding:10px 14px;background:linear-gradient(180deg,#10281a,#1a4029);color:#fff;flex-wrap:wrap}
+.modal-bar b{font-size:13px;flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modal-bar button{border:1px solid rgba(255,255,255,.34);background:rgba(255,255,255,.16);color:#fff;border-radius:10px;padding:8px 12px;font-weight:800;font-size:12px;min-height:36px}
+.modal-bar button:hover{background:rgba(255,255,255,.3)}
+.modal-scroll{flex:1;overflow:auto;padding:18px}
+.mtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.mtab{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:8px 12px;font-weight:800;font-size:12.2px}
+.mtab.on{background:linear-gradient(135deg,var(--brand),var(--teal));color:#fff;border-color:transparent}
+table.base{width:100%;border-collapse:collapse;font-size:12.6px}
+table.base th,table.base td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.base th{background:var(--brand-ll);font-weight:800}
+table.base tr:nth-child(even) td{background:#fbfefc}
+.fab{display:none;position:fixed;right:14px;bottom:14px;z-index:60;background:linear-gradient(135deg,var(--brand),var(--teal));color:#fff;border:none;padding:13px 19px;border-radius:999px;font-weight:800;font-size:13.4px;box-shadow:0 12px 30px rgba(21,163,74,.45);gap:8px;align-items:center;min-height:48px}
+.pv-close{display:none}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,90px);background:#10281a;color:#fff;padding:12px 19px;border-radius:14px;font-weight:800;font-size:13px;z-index:400;opacity:0;max-width:calc(100vw - 32px);text-align:center;line-height:1.4;transition:.32s cubic-bezier(.2,.9,.3,1.3);box-shadow:0 16px 36px rgba(0,0,0,.32);pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.fatalbox{position:fixed;left:12px;right:12px;bottom:12px;z-index:999;background:#b91c1c;color:#fff;padding:14px;border-radius:12px;font:700 13px/1.5 system-ui;white-space:pre-wrap;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+footer{max-width:1560px;margin:24px auto 0;padding:0 18px;color:var(--muted);font-size:11.8px;font-weight:600;text-align:center;line-height:1.6}
+@media(max-width:1140px){
+ .layout{grid-template-columns:1fr}
+ .two-col{grid-template-columns:minmax(0,1fr)}
+ .preview{position:fixed;inset:auto 0 0 0;top:auto;height:94vh;min-height:0;border-radius:24px 24px 0 0;z-index:80;transform:translateY(106%);transition:transform .34s cubic-bezier(.2,.8,.3,1);width:100%}
+ .preview.open{transform:none}
+ .fab{display:inline-flex}
+ .pv-close{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.34);background:rgba(255,255,255,.16);color:#fff;flex:none}
+}
+@media(max-width:700px){
+ .grid2,.grid3,.grid4,.mode-cards{grid-template-columns:minmax(0,1fr)}
+ .topbar{padding:14px 13px 16px}
+ .layout{padding:0 11px;margin-top:13px;gap:12px}
+ .card-body{padding:14px 13px}
+ .stepper-in{padding:8px 11px}
+ .st-nav{margin-left:0}
+ .cards-grid{max-height:none;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+ .pv-foot .btn{flex:1 1 auto}
+ .pv-foot .stt{width:100%;margin-left:0;text-align:right;order:9}
+ .mini,.slots{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+ .t-mech{flex:1 1 100%}
+}
+
+/* Каталог 40 готовых сценариев */
+.idea-promo{padding:16px 19px;border-radius:18px;border:1px solid #c5e5d3;background:linear-gradient(115deg,#e0f7e8,#f2fcf5 68%,#d7f4ef);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:var(--sh-s)}
+.idea-promo strong{font-size:16px;display:block;line-height:1.25;color:#174c31}.idea-promo p{font-size:12px;color:#506e5f;margin-top:4px;line-height:1.55}
+.idea-promo .mini-btn{min-height:43px}
+.idea-intro{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;flex-wrap:wrap;padding:14px 16px;border-radius:17px;background:linear-gradient(110deg,#f2fbf5,#e9f6f2);border:1px solid #d2eadd;margin-bottom:12px}
+.idea-intro h3{font-size:18px;color:#183f2a;font-weight:800;line-height:1.3}.idea-intro p{font-size:12px;color:#5b7569;margin-top:4px;max-width:68ch}
+.idea-count{font-size:12px;color:#21603e;font-weight:800;padding:7px 11px;background:#fff;border:1px solid #c6e5d1;border-radius:99px}
+.idea-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 155px 150px auto;gap:8px;margin-bottom:12px}
+.idea-toolbar input,.idea-toolbar select{height:42px;background:#fff;font-size:12.5px}
+.idea-filter-fav{white-space:nowrap;font-size:12px;padding:8px 12px;border-radius:11px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:800}
+.idea-filter-fav.active{background:#fff5dd;border-color:#e7c46d;color:#775411}
+.idea-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(325px,.85fr);gap:12px;align-items:start}
+.idea-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:10px;max-height:62vh;overflow-y:auto;align-content:start;padding:2px 5px 8px 1px;scrollbar-width:thin}
+.idea-card{position:relative;background:#fff;border:1.5px solid #dbe9e1;border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(15,60,32,.05);transition:transform .18s,border-color .18s,box-shadow .18s}
+.idea-card:hover{border-color:#85cda3;transform:translateY(-2px);box-shadow:0 10px 24px rgba(15,60,32,.1)}
+.idea-card.selected{border-color:#15965c;box-shadow:0 0 0 2px rgba(21,150,92,.1)}
+.idea-art{position:relative;min-height:85px;overflow:hidden;padding:12px 12px 9px;display:flex;align-items:center;background:radial-gradient(circle at 79% 18%,var(--ac) 0,transparent 52%),linear-gradient(120deg,var(--bg),var(--mn));isolation:isolate}
+.idea-art:before{content:'';position:absolute;border:2px solid rgba(255,255,255,.42);width:110px;height:110px;border-radius:32px;transform:rotate(24deg);top:-67px;right:-25px;pointer-events:none}
+.idea-art:after{content:'';position:absolute;background:rgba(255,255,255,.16);width:150px;height:150px;border-radius:50%;top:28px;right:-68px;pointer-events:none}
+.idea-emoji{font-size:38px;line-height:1;filter:drop-shadow(0 5px 4px rgba(0,0,0,.16));z-index:1}
+.idea-art small{position:absolute;bottom:8px;right:11px;color:#fff;font-size:10px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.65);z-index:1}
+.idea-heart{position:absolute;right:9px;top:8px;background:rgba(255,255,255,.9);color:#67746b;border:0;border-radius:10px;height:29px;width:30px;z-index:3;font-size:17px}
+.idea-heart.liked{background:#fff2d7;color:#ba7a15}
+.idea-card-body{padding:11px 12px 12px}
+.idea-card h4{font-size:13.4px;font-weight:800;line-height:1.35;padding-right:2px;min-height:34px}
+.idea-tags{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}
+.idea-tag{background:#eff7f2;color:#337457;border-radius:7px;font-size:10px;font-weight:800;padding:3px 6px}
+.idea-tag.pace{background:#f9f1dc;color:#9c6f27}
+.idea-small{font-size:11px;line-height:1.55;color:#5d7065;min-height:48px}
+.idea-card-actions{display:flex;gap:6px;margin-top:11px}
+.idea-card-actions button{padding:8px 5px;font-size:10.6px;min-height:34px;flex:1;white-space:nowrap}
+.idea-detail{border:1.5px solid #cbe5d5;border-radius:16px;background:#fbfefc;max-height:62vh;overflow-y:auto;padding:15px 16px;scrollbar-width:thin}
+.idea-detail-top{padding:13px 14px;border-radius:13px;color:#fff;background:linear-gradient(115deg,var(--mn),var(--ac));display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.idea-detail-top .symbol{font-size:33px}.idea-detail-top h3{font-size:16px;font-weight:800;line-height:1.3}.idea-detail-top p{font-size:11px;opacity:.94;margin-top:3px}
+.idea-detail dt{font-size:10.8px;color:#638170;font-weight:800;text-transform:uppercase;letter-spacing:.45px;margin-top:11px}
+.idea-detail dd{font-size:12.2px;color:#304e3d;line-height:1.55;margin-top:3px}
+.idea-route{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.idea-route span{padding:6px 9px;background:#fff;border:1px solid #d9e8dd;border-radius:10px;font-size:10.5px;font-weight:800;color:#346048}
+.idea-route .arr{background:none;border:none;padding:6px 0;color:#799e8a}
+.idea-detail textarea{min-height:97px;margin-top:9px;resize:vertical;font-family:'Manrope',sans-serif;font-size:12px}
+.idea-detail .idea-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:11px 0}
+.idea-detail .idea-actions button{min-width:0;font-size:11px;white-space:normal;text-align:center}
+.idea-promt-preview{background:#fff;border:1px solid #d9e9dd;border-radius:12px;padding:11px 12px;max-height:205px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.65 'JetBrains Mono',monospace;color:#334b3e}
+.idea-empty{text-align:center;color:#557663;padding:38px 18px;border:1.5px dashed #cbded0;border-radius:14px;background:#f8fcf9;font-size:12px;line-height:1.7}
+.idea-tip{font-size:10.8px;line-height:1.5;color:#617a69;margin-top:8px}
+@media(max-width:900px){.idea-workspace{grid-template-columns:1fr}.idea-results{max-height:340px}.idea-detail{max-height:none}.idea-toolbar{grid-template-columns:minmax(0,1fr) 1fr}.idea-toolbar input{grid-column:1/-1}}
+@media(max-width:500px){.idea-results{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.idea-card h4{font-size:12px}.idea-card-body{padding:9px}.idea-card-actions{flex-wrap:wrap}.idea-card-actions button{flex:1 1 100%}.idea-art{min-height:67px}.idea-emoji{font-size:30px}.idea-toolbar{grid-template-columns:1fr 1fr}.idea-detail{padding:11px}}
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect x="3" y="7" width="26" height="18" rx="4" fill="#fff" opacity=".96"/>
+          <path d="M11 13l3 3-3 3M17 19h5" stroke="#15a34a" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 25v3M22 25v3M8 28h16" stroke="#7cf2c4" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Конструктор промтов для веб-игр</h1>
+        <p>7 этапов · 40 готовых игр · 36 стилей · 22 типа игр · 70+ механик · на выходе готовый промт по универсальному шаблону</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <div class="prog-wrap"><span id="progTxt">0%</span><div class="prog-bar"><div class="prog-fill" id="progFill"></div></div></div>
+      <button class="gbtn" type="button" data-act="base">🎮 40 игр и база идей</button>
+      <button class="gbtn gold" type="button" data-act="magic">⚡ Заполнить за меня</button>
+      <button class="gbtn solid" type="button" data-act="copyMain">📋 Скопировать промт</button>
+      <button class="gbtn" type="button" data-act="reset">↺ Сброс</button>
+    </div>
+  </div>
+</header>
+
+<nav class="stepper">
+  <div class="stepper-in">
+    <button class="st on" type="button" data-act="step" data-step="1"><span class="n">1</span><b>Основа</b></button>
+    <button class="st" type="button" data-act="step" data-step="2"><span class="n">2</span><b>Стиль</b></button>
+    <button class="st" type="button" data-act="step" data-step="3"><span class="n">3</span><b>Тип игры</b></button>
+    <button class="st" type="button" data-act="step" data-step="4"><span class="n">4</span><b>Задания</b></button>
+    <button class="st" type="button" data-act="step" data-step="5"><span class="n">5</span><b>Картинки</b></button>
+    <button class="st" type="button" data-act="step" data-step="6"><span class="n">6</span><b>Механики</b></button>
+    <button class="st" type="button" data-act="step" data-step="7"><span class="n">7</span><b>Промт</b></button>
+    <div class="st-nav">
+      <button class="mini-btn sm" id="wPrev" type="button" data-act="prev">← Назад</button>
+      <button class="mini-btn sm pr" id="wNext" type="button" data-act="next">Далее →</button>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+ <div class="panes">
+
+  <div class="pane on" id="pane1">
+    <section class="idea-promo"><div><strong>🎲 40 готовых игровых сценариев</strong><p>Квесты, детективы, аркады и симуляторы. Выбери игру, вставь свои задания и скопируй полный промт.</p></div><button class="mini-btn pr" type="button" data-act="ideaOpen">Открыть каталог →</button></section>
+    <section class="card">
+      <div class="card-head">
+        <div><h2>Этап 1 · Основа игры</h2><div class="sub">Предмет, класс, тема, сюжет и число уровней</div></div>
+        <div class="head-extra"><button class="mini-btn sm" type="button" data-act="plot">🪄 Придумать сюжет</button></div>
+      </div>
+      <div class="card-body">
+        <div class="grid3">
+          <div class="field"><label class="label" for="subject">Предмет</label><select id="subject"></select>
+            <input type="text" id="subjectCustom" placeholder="Свой предмет…" style="display:none;margin-top:8px"></div>
+          <div class="field"><label class="label" for="topic">Тема игры / урока</label><input type="text" id="topic" placeholder="Например: Ударения и синонимы"></div>
+          <div class="field"><span class="label">Класс</span><div class="chips" id="gradeChips"></div></div>
+        </div>
+        <div class="grid4">
+          <div class="field"><label class="label" for="levels">Уровней</label><input type="number" id="levels" min="1" max="40" value="6"></div>
+          <div class="field"><label class="label" for="timeMin">Время, минут</label><input type="number" id="timeMin" min="1" max="90" value="15"></div>
+          <div class="field"><label class="label" for="livesN">Жизни</label><input type="number" id="livesN" min="1" max="10" value="3"></div>
+          <div class="field"><label class="label" for="ageOut">Возраст (авто)</label><input type="text" id="ageOut" readonly tabindex="-1"></div>
+        </div>
+        <div class="field"><label class="label" for="plot">Сюжет / легенда</label>
+          <textarea id="plot" placeholder="Например: юный хранитель дневника должен собрать 6 утерянных страниц, решая задания по русскому языку"></textarea></div>
+        <div class="rowbtns">
+          <button class="mini-btn pr" type="button" data-act="goto" data-goto="2">Далее: выбрать стиль →</button>
+          <button class="mini-btn" type="button" data-act="base">📚 Открыть базу идей</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="pane" id="pane2">
+    <section class="card">
+      <div class="card-head">
+        <div><h2>Этап 2 · Стиль и вселенная</h2><div class="sub">36 стилей с описанием и палитрой · справа — свой вариант</div></div>
+        <div class="head-extra"><span class="mini-pill" id="styleName">не выбран</span></div>
+      </div>
+      <div class="card-body">
+        <div class="two-col">
+          <div>
+            <div class="search">
+              <input type="text" id="styleSearch" placeholder="🔍 Поиск стиля: космос, неон, пиксели, пергамент…">
+              <button class="mini-btn sm" type="button" data-act="randStyle">🎲 Случайный</button>
+            </div>
+            <div class="cards-grid" id="styleGrid"></div>
+          </div>
+          <div>
+            <div class="group" style="margin-bottom:0">
+              <h4>✏️ Свой вариант стиля</h4>
+              <div class="field"><input type="text" id="ownStyleName" placeholder="Название (например: «Лунная лаборатория»)"></div>
+              <div class="field"><textarea id="ownStyleDesc" style="min-height:58px" placeholder="Описание: цвета, предметы, настроение"></textarea></div>
+              <div class="field"><span class="label">Палитра</span>
+                <div class="pal">
+                  <div class="pal-item"><small>Фон</small><input type="color" id="cBg" value="#f3e6c8"></div>
+                  <div class="pal-item"><small>Основной</small><input type="color" id="cMain" value="#7b2d26"></div>
+                  <div class="pal-item"><small>Текст</small><input type="color" id="cText" value="#3a2a1c"></div>
+                  <div class="pal-item"><small>Акцент</small><input type="color" id="cAccent" value="#c8963e"></div>
+                  <div class="pal-item"><small>Ошибка</small><input type="color" id="cErr" value="#b3261e"></div>
+                  <div class="pal-item"><small>Успех</small><input type="color" id="cOk" value="#3e7d3a"></div>
+                </div></div>
+              <div class="field"><label class="label" for="fHead">Шрифт заголовков</label><select id="fHead"></select></div>
+              <div class="field"><label class="label" for="fText">Шрифт текста</label><select id="fText"></select></div>
+              <div class="field"><label class="label" for="fBtn">Шрифт кнопок</label><select id="fBtn"></select></div>
+              <div class="field"><label class="label" for="mood">Атмосфера</label><select id="mood"></select></div>
+              <div class="field"><label class="label" for="visualTheme">Тема визуала</label><input type="text" id="visualTheme" placeholder="старый дневник путешественника"></div>
+              <button class="mini-btn wide" type="button" data-act="useOwnStyle">✔ Использовать свой стиль</button>
+            </div>
+            <details class="adv"><summary>✨ Эффекты оформления</summary><div class="adv-b"><div class="mini" id="fxList"></div></div></details>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="pane" id="pane3">
+    <section class="card">
+      <div class="card-head">
+        <div><h2>Этап 3 · Тип игры</h2><div class="sub">Можно выбрать несколько · справа — свой вариант</div></div>
+        <div class="head-extra"><span class="mini-pill" id="typeCount">0 выбрано</span></div>
+      </div>
+      <div class="card-body">
+        <div class="two-col">
+          <div>
+            <div class="search">
+              <input type="text" id="typeSearch" placeholder="🔍 Поиск типа: кликер, степпер, пазл, своя игра…">
+              <button class="mini-btn sm" type="button" data-act="clearTypes">✕ Снять выбор</button>
+            </div>
+            <div class="cards-grid" id="typeGrid"></div>
+          </div>
+          <div>
+            <div class="group" style="margin-bottom:0">
+              <h4>✏️ Свой тип игры</h4>
+              <div class="field"><input type="text" id="ownTypeName" placeholder="Название (например: «Аукцион знаний»)"></div>
+              <div class="field"><textarea id="ownTypeDesc" style="min-height:62px" placeholder="Кратко: в чём суть и какие механики"></textarea></div>
+              <button class="mini-btn wide" type="button" data-act="addOwnType">＋ Добавить свой тип</button>
+            </div>
+            <div class="group" style="margin-top:12px">
+              <h4>🧭 Что это за типы</h4>
+              <div class="hint" style="margin-top:0">
+                <b>Степпер</b> — шаг → проверка → следующий шаг.<br>
+                <b>Кликер</b> — кликать правильные элементы на скорость.<br>
+                <b>Квест</b> — сюжет с картой и локациями.<br>
+                <b>Викторина</b> — вопросы с вариантами и баллами.<br>
+                <b>Аркада</b> — действие в реальном времени.<br>
+                <b>Симулятор</b> — ресурсы, шкалы, заказы.<br>
+                <b>Drag-and-Drop</b> — сортировка и классификация.<br>
+                <b>Escape-room</b> — загадки, инвентарь, коды.<br>
+                <b>RPG</b> — опыт, уровни, развитие персонажа.<br>
+                Полная таблица — в «📚 Базе идей».
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="pane" id="pane4">
+    <section class="card">
+      <div class="card-head">
+        <div><h2>Этап 4 · Задания</h2><div class="sub">Одно поле для ввода + механика для каждого задания (не обязательно)</div></div>
+        <div class="head-extra"><span class="mini-pill" id="taskCount">0 заданий</span><span class="mini-pill" id="mechTaskCount">0 с механикой</span></div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label class="label" for="bulk">Задания — по одному в строке</label>
+          <textarea id="bulk" style="min-height:160px;font-family:'JetBrains Mono',monospace;font-size:12.2px" placeholder="choice: Какое слово с ударением на 2-м слоге? | торты | шофер | звонит | кухонный | 3 | Произнеси вслух
+input: Вставь букву: ч_щоба | а | После шипящих под ударением А
+match: метель = вьюга | храбрый = смелый | печаль = грусть
+order: Расставь по возрастанию числа букв | кот | слон | библиотека
+dnd: берёза :: живое | камень :: неживое | ромашка :: живое
+tf: Глагол отвечает на вопрос «кто?» | 2 | Вспомни вопросы глагола
+open: Придумай предложение со словом «синонимы» | Синонимы - слова, близкие по значению"></textarea>
+          <div class="rowbtns" style="margin-top:9px">
+            <button class="mini-btn pr" type="button" data-act="stub">🧩 Заготовки по теме</button>
+          </div>
+          <div class="hint">Формат строки: <b>тип: текст | варианты… | правильный ответ | подсказка</b>. Типы: choice, multi, tf, input, match, order, dnd, open. Ответ у choice — номер варианта, у input — варианты через «|». Задания разбираются автоматически, пока вы печатаете.</div>
+        </div>
+        <div class="field">
+          <span class="label">Игровая механика для каждого задания (не обязательное поле)</span>
+          <div id="taskList"></div>
+        </div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-head"><div><h2>Скриншоты заданий</h2><div class="sub">В промт попадёт указание прочитать задания с изображений</div></div>
+        <div class="head-extra"><span class="mini-pill" id="shotCount">0 скриншотов</span></div></div>
+      <div class="card-body">
+        <div class="drop" id="drop" role="button" tabindex="0">📎 Нажмите или перетащите скриншоты заданий сюда
+          <small>PNG, JPG — до 10 штук. Файлы остаются в браузере. В промте будет: «к сообщению приложены скриншоты — возьми задания с них».</small></div>
+        <input type="file" id="fileInput" accept="image/*" multiple hidden>
+        <div class="shots" id="shots"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="pane" id="pane5">
+    <section class="card">
+      <div class="card-head">
+        <div><h2>Этап 5 · Картинки</h2><div class="sub">Способ → дополнительные элементы → слоты под «плюсик»</div></div>
+        <div class="head-extra"><span class="mini-pill" id="imgStat">0 слотов</span></div>
+      </div>
+      <div class="card-body">
+        <div class="mode-cards" id="imgModes"></div>
+        <div class="hint" id="imgModeHint" style="margin-top:11px">Выберите способ — ниже появятся нужные инструменты.</div>
+
+        <div class="group" style="margin-top:14px">
+          <h4>✏️ Дополнительные элементы <span class="mini-pill" id="extraCount">0 элементов</span></h4>
+          <div class="field" style="margin-bottom:0">
+            <textarea id="extraElems" placeholder="Напишите свои элементы, которые нужно сгенерировать / подставить — по одному в строке. Например:
+рамка для текста в виде свитка
+иконка сундука с сокровищами
+портрет героя в шляпе
+фон для кнопки «Начать игру»
+медаль с лавровыми ветвями
+стрелка-указатель маршрута"></textarea>
+            <div class="hint">Каждая строка станет отдельным слотом: для неё конструктор соберёт готовый промт для нейросети изображений (вкладка «Картинки») и добавит пункт в промт игры.</div>
+          </div>
+        </div>
+
+        <div id="modeAi" style="display:none;margin-top:14px">
+          <div class="group">
+            <h4>🤖 Что попадёт в промт</h4>
+            <div class="hint" style="margin-top:0">Блок «6. ИЗОБРАЖЕНИЯ: сгенерируй» + готовый промт для каждой картинки: фон, персонаж, карта, награда, финал, задания и все дополнительные элементы из списка выше. Генерировать — в Qwen, Kandinsky, Шедеврум, Nano Banana.</div>
+            <div class="rowbtns" style="margin-top:11px">
+              <button class="mini-btn pr" type="button" data-act="copyImgPrompts">📋 Скопировать промты картинок</button>
+              <button class="mini-btn" type="button" data-act="showImgTab">🖼 Открыть вкладку «Картинки»</button>
+            </div>
+          </div>
+          <div class="slots" id="slotsAi"></div>
+        </div>
+
+        <div id="modePh" style="display:none;margin-top:14px">
+          <div class="group">
+            <h4>⬜ Что попадёт в промт</h4>
+            <div class="hint" style="margin-top:0">Строка из шаблона: «Изображения: плейсхолдеры с описанием в стиле игры». Плюс требование сделать в левом нижнем углу игры кнопку «＋» — чтобы потом подставить свои картинки и скачать готовую игру с закрытым кодом.</div>
+          </div>
+        </div>
+
+        <div id="modeLib" style="display:none;margin-top:14px">
+          <div class="group">
+            <h4>📁 Картинки добавлю позже через Базис24</h4>
+            <div class="hint" style="margin-top:0">В промт попадёт: картинки НЕ генерировать, я добавлю их сам через Базис24 / Canva / фотобанк. В самой игре в <b>левом нижнем углу</b> будет плавающая кнопка «＋»: нажали → загрузили файлы или вставили ссылки во все слоты → нажали «Скачать готовую игру» → получили HTML-файл с картинками внутри и <b>закрытым для редактирования кодом</b>.</div>
+            <div class="field" style="margin-top:12px;margin-bottom:0">
+              <label class="label" for="basisNote">Что буду подставлять через Базис24 (комментарий в промт)</label>
+              <input type="text" id="basisNote" placeholder="Например: фон — карта сокровищ, герой — пират, награда — сундук, задания — иллюстрации из Базис24">
+            </div>
+            <label class="chkline">
+              <input type="checkbox" id="closeCode" checked>
+              <span>🔒 Скачивать игру с закрытым для редактирования кодом
+                <small>В промт добавится требование: обфусцированный и минифицированный JS, без комментариев и панели разработчика, панель «＋» в скачанном файле отключена (режим LOCKED), блокировка контекстного меню и выделения текста.</small></span>
+            </label>
+            <div class="rowbtns" style="margin-top:11px">
+              <button class="mini-btn" type="button" data-act="markAll">✅ Отметить все слоты</button>
+              <button class="mini-btn" type="button" data-act="clearImg">🗑 Снять отметки</button>
+            </div>
+          </div>
+          <div class="slots" id="slots"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="pane" id="pane6">
+    <section class="card">
+      <div class="card-head">
+        <div><h2>Этап 6 · Как проходит игра</h2><div class="sub">Пресет одним нажатием или отметьте нужное вручную — можно выбирать несколько</div></div>
+        <div class="head-extra"><span class="mini-pill" id="mechStat">0 выбрано</span></div>
+      </div>
+      <div class="card-body">
+        <div class="rowbtns" id="mechPresets" style="margin-bottom:13px"></div>
+        <div class="group"><h4>🖥 Экраны игры</h4><div class="mini" id="screenList"></div></div>
+        <div class="group"><h4>🎮 Управление</h4><div class="mini" id="ctrlList"></div></div>
+        <div class="group"><h4>💬 Обратная связь</h4><div class="mini" id="fbList"></div></div>
+        <div class="group"><h4>✨ Дополнительные эффекты</h4><div class="mini" id="fxExtraList"></div></div>
+        <div class="group"><h4>📈 Прогресс и счёт</h4><div class="mini" id="prList"></div></div>
+        <div class="group"><h4>🏆 Награды</h4><div class="mini" id="rwList"></div></div>
+        <div class="group"><h4>🐾 Персонаж</h4><div class="mini" id="chList"></div></div>
+        <div class="group"><h4>🎲 Геймплей и усложнения</h4><div class="mini" id="gpList"></div></div>
+        <div class="group"><h4>🕹 Мини-игры между уровнями</h4><div class="mini" id="mgList"></div></div>
+        <div class="group"><h4>⚙️ Технически (библиотеки, адаптивность, код)</h4><div class="mini" id="techList"></div></div>
+        <div class="grid4" style="margin-top:12px">
+          <div class="field"><label class="label" for="g90">90% и выше</label><input type="text" id="g90" value="Отлично"></div>
+          <div class="field"><label class="label" for="g70">70–89%</label><input type="text" id="g70" value="Хорошо"></div>
+          <div class="field"><label class="label" for="g50">50–69%</label><input type="text" id="g50" value="Удовлетворительно"></div>
+          <div class="field"><label class="label" for="gLow">Менее 50%</label><input type="text" id="gLow" value="Требуется доработка"></div>
+        </div>
+        <div class="field"><label class="label" for="secretText">Секретный бонус / код</label><input type="text" id="secretText" value="Секретный код урока: ЗНАНИЕ-СИЛА"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="pane" id="pane7">
+    <div class="result-hero">
+      <h2>🎮 Промт для игры готов</h2>
+      <p id="resSummary">Отправьте его в DeepSeek, Qwen, YandexGPT или GigaChat — и получите готовый код игры в одном HTML-файле.</p>
+      <div class="rbtns">
+        <button class="rbtn gold" type="button" data-act="copyMain">📋 Скопировать промт игры</button>
+        <button class="rbtn solid" type="button" data-act="copyShort">⚡ Краткая форма</button>
+        <button class="rbtn" type="button" data-act="copyImgs">🖼 Промты картинок</button>
+        <button class="rbtn" type="button" data-act="dlTxt">⬇ Скачать всё .txt</button>
+      </div>
+    </div>
+    <section class="card">
+      <div class="card-head"><div><h2>Чек-лист промта</h2><div class="sub">Что заполнено, а что стоит добавить перед отправкой</div></div></div>
+      <div class="card-body"><div class="checklist" id="checklist"></div></div>
+    </section>
+    <section class="card">
+      <div class="card-head"><div><h2>Куда отправлять</h2><div class="sub">Сводная таблица из методички</div></div></div>
+      <div class="card-body">
+        <div class="hint" style="margin-top:0">
+          • <b>Промт игры</b> → DeepSeek, Qwen, YandexGPT, GigaChat — вернёт готовый HTML-код игры с кнопкой «＋» в левом нижнем углу.<br>
+          • <b>Промты картинок</b> → Qwen, Kandinsky, Шедеврум, Nano Banana — вернёт иллюстрации и дополнительные элементы.<br>
+          • <b>Картинки из Базис24</b> → добавляются уже в самой игре: «＋» → загрузить → «Скачать готовую игру» (код закрыт от редактирования).<br>
+          • Если ответ не идеален — напишите «Доработай: добавь карту уровней, сделай задание 3 сложнее» вместо генерации заново.
+        </div>
+      </div>
+    </section>
+  </div>
+
+ </div>
+
+ <aside class="preview" id="preview">
+  <div class="pv-head">
+    <div class="pv-title"><span class="live"></span><span class="tt" id="pvName">ГОТОВЫЙ ПРОМТ — обновляется автоматически</span><button class="pv-close" type="button" data-act="closePv" aria-label="Закрыть">✕</button></div>
+    <div class="tabs" id="tabs">
+      <button class="tab active" type="button" data-act="tab" data-tab="prompt">🎮 Промт игры</button>
+      <button class="tab" type="button" data-act="tab" data-tab="short">⚡ Краткая форма</button>
+      <button class="tab" type="button" data-act="tab" data-tab="img">🖼 Картинки</button>
+      <button class="tab" type="button" data-act="tab" data-tab="guide">🧭 Инструкция</button>
+    </div>
+  </div>
+  <div class="pv-body"><pre id="output"></pre></div>
+  <div class="pv-foot">
+    <button class="btn primary" type="button" data-act="copyActive">📋 Копировать</button>
+    <button class="btn" type="button" data-act="dlActive">⬇ Скачать .txt</button>
+    <button class="btn" type="button" data-act="dlAll">📦 Все промты</button>
+    <span class="stt" id="stLine">0 заданий</span>
+  </div>
+ </aside>
+</div>
+
+<button class="fab" type="button" data-act="fab">📋 Промт</button>
+<div class="toast" id="toast">Готово</div>
+
+<div class="modal" id="baseModal">
+  <div class="modal-in">
+    <div class="modal-bar"><b>📚 База идей · 40 игровых шаблонов и справочник конструктора</b>
+      <button type="button" data-act="closeBase">✕ закрыть</button></div>
+    <div class="modal-scroll">
+      <div class="mtabs" id="baseTabs">
+        <button class="mtab on" type="button" data-act="baseTab" data-b="ideas">🎮 40 готовых игр</button>
+        <button class="mtab" type="button" data-act="baseTab" data-b="uni">Вселенные и стили</button>
+        <button class="mtab" type="button" data-act="baseTab" data-b="types">Типы игр</button>
+        <button class="mtab" type="button" data-act="baseTab" data-b="mech">Механики в браузере</button>
+        <button class="mtab" type="button" data-act="baseTab" data-b="fonts">Шрифты</button>
+        <button class="mtab" type="button" data-act="baseTab" data-b="subj">Задания по предметам</button>
+        <button class="mtab" type="button" data-act="baseTab" data-b="alg">Алгоритм</button>
+      </div>
+      <div id="baseBody"></div>
+    </div>
+  </div>
+</div>
+
+<footer>Универсальный шаблон промта для интерактивных веб-игр · РОЛЬ → 1. ВИЗУАЛ И СТИЛЬ → 2. СТРУКТУРА → 3. МЕХАНИКА → 4. ЗАДАНИЯ → 5. ТЕХНИЧЕСКИ → 6. ИЗОБРАЖЕНИЯ → КРАТКИЙ ШАБЛОН</footer>
+
+<script>
+(function(){
+'use strict';
+function $(s){return document.querySelector(s);}
+function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
+function byId(id){return document.getElementById(id);}
+var CK='<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.3l2.6 2.6L10 3.4" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function plural(n,f){var a=n%100,b=n%10;if(a>10&&a<20){return f[2];}if(b===1){return f[0];}if(b>1&&b<5){return f[1];}return f[2];}
+function val(id){var e=byId(id);return e?(e.value||''):'';}
+function setVal(id,v){var e=byId(id);if(e){e.value=v;}}
+function show(id,on){var e=byId(id);if(e){e.style.display=on?'':'none';}}
+function toast(m){var t=byId('toast');if(!t){return;}t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2500);}
+function fatal(err){
+ var msg=(err&&err.message)?err.message:String(err);
+ var box=document.createElement('div');
+ box.className='fatalbox';
+ box.textContent='Ошибка конструктора: '+msg;
+ document.body.appendChild(box);
+ if(window.console){window.console.error(err);}
+}
+function copyText(text,msg){
+ var done=function(){toast(msg||'Скопировано');};
+ var fallback=function(){
+  var ta=document.createElement('textarea');
+  ta.value=text;ta.style.position='fixed';ta.style.top='-1000px';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');done();}catch(e){toast('Не удалось скопировать');}
+  document.body.removeChild(ta);
+ };
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(fallback);}
+ else{fallback();}
+}
+function slug(s){return (s||'promt').toLowerCase().replace(/[^a-z0-9\u0430-\u044f]+/gi,'-').replace(/^-|-$/g,'').slice(0,40)||'promt';}
+function downloadFile(name,text){
+ var b=new Blob([text],{type:'text/plain;charset=utf-8'});
+ var a=document.createElement('a');
+ a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+}
+var SUBJECTS=[
+ {v:'Математика',g:'математик'},{v:'Русский язык',g:'русского языка'},{v:'Литература',g:'литератур'},
+ {v:'Литературное чтение',g:'литературного чтения'},{v:'Английский язык',g:'английского языка'},
+ {v:'Информатика',g:'информатик'},{v:'История',g:'историк'},{v:'Обществознание',g:'обществознан'},
+ {v:'География',g:'географ'},{v:'Биология',g:'биолог'},{v:'Физика',g:'физик'},{v:'Химия',g:'химик'},
+ {v:'Окружающий мир',g:'окружающего мира'},{v:'ИЗО',g:'ИЗО'},{v:'Музыка',g:'музык'},
+ {v:'Технология',g:'технологик'},{v:'ОБЖ',g:'ОБЖ'},{v:'Другой (вписать)',g:''}
+];
+var STYLES=[
+ {n:'Гравити Фолз',c:'Мультфильмы',d:'Дневник, пергамент, бордовый, загадки',m:'загадочная',p:['#f3e6c8','#7b2d26','#3a2a1c','#c8963e','#b3261e','#3e7d3a'],f:['Marck Script','Caveat','Russo One'],fx:['parchment','torn','scotch','vignette'],vt:'старый дневник путешественника с потёртыми полями'},
+ {n:'Хогвартс',c:'Мультфильмы',d:'Тёмная магия, изумрудный, свечи, свитки',m:'таинственная',p:['#101c16','#1f6f4a','#e9f4ee','#d4af37','#c0392b','#2ecc71'],f:['Playfair Display','Lora','Bebas Neue'],fx:['glow','vignette'],vt:'залы школы магии со свечами'},
+ {n:'Шрек',c:'Мультфильмы',d:'Болото, сказка, зелёный, юмор',m:'весёлая',p:['#eaf6d9','#4c8a2f','#2c3a1e','#b8860b','#b3261e','#3e8e2f'],f:['Indie Flower','Caveat','Russo One'],fx:['watercolor'],vt:'уютное болото с деревянными табличками'},
+ {n:'Головоломка',c:'Мультфильмы',d:'Яркие эмоции, цветные шары памяти',m:'добрая',p:['#fff3f7','#e0559a','#33203a','#ffc93c','#e05252','#35b06f'],f:['Pacifico','Inter','Russo One'],fx:['glow'],vt:'штаб эмоций с пультами и шарами памяти'},
+ {n:'Холодное сердце',c:'Мультфильмы',d:'Лёд, кристаллы, голубой, снег',m:'сказочная',p:['#e8f4ff','#2e7fc2','#16324a','#7fd8f0','#d05a5a','#35a06f'],f:['Satisfy','Inter','Bebas Neue'],fx:['weather','glow'],vt:'ледяной дворец и снежные узоры'},
+ {n:'Матрица',c:'Игры',d:'Неон, чёрный, падающий зелёный код',m:'киберпанк',p:['#050a06','#00b34a','#b8ffcf','#00ff6a','#ff4d4d','#00e05a'],f:['Space Mono','Space Mono','Space Mono'],fx:['neon'],vt:'падающий зелёный код и терминалы'},
+ {n:'Симс',c:'Игры',d:'Дом, быт, пастель, уют',m:'уютная',p:['#fdf3e7','#7fb069','#4a3f35','#e8a87c','#c0564f','#58a05c'],f:['Indie Flower','Inter','Inter'],fx:['watercolor'],vt:'уютный домик с пламбобом над крышей'},
+ {n:'Stardew Valley',c:'Игры',d:'Пиксельная ферма, грядки, спокойствие',m:'спокойная',p:['#f2ead3','#6a8f3c','#3b3222','#d9a441','#b3452f','#4f8f3a'],f:['Press Start 2P','Space Mono','Press Start 2P'],fx:['pixel'],vt:'пиксельная ферма с амбаром'},
+ {n:'Genshin Impact',c:'Игры',d:'Аниме, золото, магические печати',m:'эпичная',p:['#f7f1e3','#b08d3e','#2f2a1e','#e3c567','#b3452f','#4f8f5a'],f:['Playfair Display','Lora','Oswald'],fx:['glow'],vt:'парящие острова и магические печати'},
+ {n:'Minecraft',c:'Игры',d:'Кубы, пиксели, крафт, сундуки',m:'приключенческая',p:['#d9c9a3','#5b8731','#2b2417','#8f6b3a','#a33b2a','#4f8f3a'],f:['Press Start 2P','Space Mono','Press Start 2P'],fx:['pixel'],vt:'кубический мир из блоков'},
+ {n:'Покемоны',c:'Игры',d:'Ярко, аниме, красный, покеболы',m:'дружелюбная',p:['#fff8e1','#e3350d','#2b2b2b','#ffcb05','#d04030','#3b9e4e'],f:['Russo One','Inter','Russo One'],fx:['glow'],vt:'тропинки региона и покеболы'},
+ {n:'Звёздные войны',c:'Кино',d:'Космос, тёмный, световой меч',m:'эпичная',p:['#05070f','#1b3a6b','#e8ecf5','#ffe81f','#ff3b3b','#3bd06a'],f:['Bebas Neue','Oswald','Bebas Neue'],fx:['glow','vignette'],vt:'звёздное небо и корабли'},
+ {n:'Игра в кальмара',c:'Кино',d:'Минимализм, розовый, зелёный, геометрия',m:'напряжённая',p:['#f6e7ea','#e0447c','#23233a','#2fbf8f','#d0344c','#2fbf8f'],f:['Anton','Inter','Anton'],fx:[],vt:'геометрические фигуры и контрастные площадки'},
+ {n:'Властелин колец',c:'Кино',d:'Пергамент, средневековье, золото',m:'эпическая',p:['#efe3c8','#6b4f2a','#33291a','#b08d3e','#8f2f22','#4f7a3a'],f:['Playfair Display','Lora','Old Standard TT'],fx:['parchment','vignette'],vt:'старинная карта Средиземья'},
+ {n:'Ведьмак',c:'Кино',d:'Тёмное фэнтези, серебро, сталь',m:'мрачная',p:['#17181c','#4a4f5a','#d8dbe2','#9aa3b2','#a33b2a','#5f9e6a'],f:['Merriweather','Lora','Oswald'],fx:['vignette'],vt:'тёмный лес и медальоны'},
+ {n:'Marvel',c:'Кино',d:'Комиксы, фиолетовый, золото, динамика',m:'динамичная',p:['#101226','#5b2a86','#f2ecff','#f5c542','#e04545','#3bb273'],f:['Anton','Inter','Anton'],fx:['glow'],vt:'комиксовые панели и взрывные надписи'},
+ {n:'Нуар',c:'Кино',d:'Чёрно-белый, дождь, тени, детектив',m:'детективная',p:['#101010','#3a3a3a','#e6e6e6','#cfcfcf','#b34040','#7fb069'],f:['Courier Prime','Courier Prime','Courier Prime'],fx:['weather','vignette'],vt:'мокрый асфальт, фонари и силуэты'},
+ {n:'Космос',c:'Темы',d:'Звёзды, синий, фиолетовый, ракеты',m:'футуристическая',p:['#0b1030','#3b4fd8','#e8ecff','#8f7bff','#ff5470','#3bd0a0'],f:['Russo One','Inter','Russo One'],fx:['glow','neon'],vt:'планеты, ракеты и созвездия'},
+ {n:'Подводный мир',c:'Темы',d:'Бирюзовый, кораллы, пузыри',m:'волшебная',p:['#e0f7fa','#0e8f9e','#123a42','#ff8a65','#d05a5a','#2fbf8f'],f:['Satisfy','Inter','Oswald'],fx:['watercolor','glow'],vt:'кораллы, пузыри и стайки рыб'},
+ {n:'Джунгли',c:'Темы',d:'Зелёный, лианы, золотые идолы',m:'приключенческая',p:['#eaf6d9','#2f7a33','#22301c','#d9a441','#b3452f','#3e8e2f'],f:['Russo One','Inter','Russo One'],fx:['watercolor'],vt:'лианы, хижины и золотые идолы'},
+ {n:'Древний Египет',c:'Темы',d:'Песочный, золото, иероглифы',m:'таинственная',p:['#f4e3b8','#b08d3e','#3a2f18','#2e6f9e','#a33b2a','#4f8f3a'],f:['Old Standard TT','Lora','Bebas Neue'],fx:['parchment'],vt:'пирамиды и свитки папируса'},
+ {n:'Пираты',c:'Темы',d:'Карта сокровищ, корабль, сундуки',m:'приключенческая',p:['#fdeedd','#c0564f','#33221c','#2e6f9e','#b3261e','#3e8e5a'],f:['Marck Script','Caveat','Russo One'],fx:['parchment','torn'],vt:'карта сокровищ и сундуки'},
+ {n:'Киберпанк',c:'Темы',d:'Неон, чёрный, синий, город будущего',m:'футуристическая',p:['#0a0a14','#12122b','#d9f3ff','#00e5ff','#ff2e63','#00e08a'],f:['Space Mono','Space Mono','Space Mono'],fx:['neon','glow'],vt:'неоновые вывески мегаполиса'},
+ {n:'Стимпанк',c:'Темы',d:'Медь, бронза, шестерёнки, дирижабли',m:'индустриальная',p:['#efe0c8','#8a5a2b','#33261a','#b0713a','#8f2f22','#5f7a3a'],f:['Old Standard TT','Merriweather','Oswald'],fx:['parchment','vignette'],vt:'шестерёнки и латунные приборы'},
+ {n:'Средневековье',c:'Темы',d:'Бордовый, золото, камень, замок',m:'эпическая',p:['#efe3c8','#7b2d26','#33291a','#b08d3e','#8f2f22','#4f7a3a'],f:['Playfair Display','Lora','Old Standard TT'],fx:['parchment','torn'],vt:'замок, знамёна и рыцарский зал'},
+ {n:'80-е / синтвейв',c:'Темы',d:'Неон, розовый, сетка горизонта',m:'ретро',p:['#160b2b','#ff2e97','#f4e9ff','#00e5ff','#ff4d6d','#3bf0a5'],f:['Bebas Neue','Inter','Bebas Neue'],fx:['neon','glow'],vt:'неоновая сетка и синтезаторы'},
+ {n:'Япония / аниме',c:'Темы',d:'Сакура, красный, золотой, гравюры',m:'аниме',p:['#f7f0ea','#c0392b','#241c1a','#d4af37','#b3261e','#3e7d4a'],f:['Playfair Display','Lora','Bebas Neue'],fx:['watercolor'],vt:'сакура, фонарики и гравюры'},
+ {n:'Новогодний',c:'Праздники',d:'Ёлка, снег, гирлянды, подарок',m:'сказочная',p:['#f2f8ff','#c0392b','#1b3a2a','#2f9e5f','#d94f4f','#15803d'],f:['Mountains of Christmas','Inter','Russo One'],fx:['weather','glow'],vt:'зимний лес с гирляндами и подарками'},
+ {n:'Хэллоуин',c:'Праздники',d:'Тыквы, мистика, оранжевый, ночь',m:'мистическая',p:['#1a1024','#7b2d86','#f6e7ff','#ff8c1a','#b3261e','#6ec06a'],f:['Creepster','Lora','Creepster'],fx:['vignette','glow'],vt:'ночной дом с тыквами и летучими мышами'},
+ {n:'Мультяшный детский',c:'Детям',d:'Яркие мелки, крупные формы',m:'весёлая',p:['#fffdf2','#ff8a65','#3a2a1c','#4cc3ff','#e05252','#3fbf6f'],f:['Indie Flower','Caveat','Pacifico'],fx:['watercolor'],vt:'нарисованный мелками мир'},
+ {n:'Школьная тетрадь',c:'Детям',d:'Клетка, синий, поля, линейки',m:'спокойная',p:['#f7faff','#2b5cff','#1b2a4a','#ff6b6b','#d0403a','#1f9d55'],f:['Caveat','Inter','Russo One'],fx:['grid'],vt:'страница тетради в клетку с полями'},
+ {n:'Космическая станция',c:'Техно',d:'Серый, голубой, приборные панели',m:'серьёзная',p:['#eef2f6','#37536b','#16222e','#37b6ff','#d0403a','#2fbf8f'],f:['Oswald','Inter','Oswald'],fx:['glow'],vt:'отсек станции с экранами и панелями'},
+ {n:'Волшебный лес',c:'Природа',d:'Мох, светлячки, грибы, туман',m:'таинственная',p:['#eef7e8','#3f7a3a','#1e2b1a','#c9e265','#b3452f','#4f9e5a'],f:['Satisfy','Lora','Oswald'],fx:['glow','vignette'],vt:'лесная поляна со светлячками'},
+ {n:'Конфетная страна',c:'Детям',d:'Пастель, сладости, пузырьки',m:'добрая',p:['#fff0f5','#ff5c8a','#4a2436','#ffd166','#e05252','#3fbf8f'],f:['Pacifico','Inter','Russo One'],fx:['watercolor','glow'],vt:'страна из конфет и леденцов'},
+ {n:'Детектив с лупой',c:'Кино',d:'Крафт, печати, досье, улики',m:'детективная',p:['#f3ead9','#8a6a3a','#2f2416','#c0392b','#a33b2a','#4f7a3a'],f:['Courier Prime','Merriweather','Oswald'],fx:['parchment','vignette'],vt:'стол детектива с досье и лупой'},
+ {n:'Ретро-автомат',c:'Игры',d:'Аркадный кабинет, пиксели, неон',m:'ретро',p:['#120b1f','#ff2e63','#f4e9ff','#00e5ff','#ff4d6d','#3bf0a5'],f:['Press Start 2P','Space Mono','Press Start 2P'],fx:['pixel','neon'],vt:'аркадный автомат с джойстиком'}
+];
+var GTYPES=[
+ {n:'Квест',d:'Последовательное прохождение сюжета',mech:'Карта, локации, диалоги, выбор пути, инвентарь'},
+ {n:'Викторина',d:'Вопросы с вариантами ответов',mech:'Выбор ответа, таймер, баллы, сложность'},
+ {n:'Аркада',d:'Действие в реальном времени',mech:'Падение объектов, движение, клик, таймер'},
+ {n:'Симулятор',d:'Управление процессом',mech:'Ресурсы, шкалы, заказы, улучшения'},
+ {n:'Кликер',d:'Нажатие на правильные элементы',mech:'Кнопки, выбор, счёт, таймер'},
+ {n:'Drag-and-Drop',d:'Перетаскивание объектов',mech:'Сортировка, соединение, классификация'},
+ {n:'Escape-room',d:'Поиск и решение загадок',mech:'Инвентарь, модальные окна, комбинации'},
+ {n:'RPG',d:'Развитие персонажа',mech:'Опыт, уровни, выбор, ветвление'},
+ {n:'Ритм-игра',d:'Нажатие в такт',mech:'Анимация, музыка, клик'},
+ {n:'Степпер (пошаговая)',d:'Шаг, проверка, следующий шаг',mech:'Пошаговый прогресс, подсказка на каждом шаге'},
+ {n:'Пазл / мозаика',d:'Собрать картинку или схему из частей',mech:'Перетаскивание частей, сетка, превью'},
+ {n:'Мемори / найди пару',d:'Карточки-перевёртыши на запоминание',mech:'Переворот карточек, счёт ходов'},
+ {n:'Найди отличия',d:'Клик по скрытым объектам на изображении',mech:'Кликабельные зоны, счётчик найденного'},
+ {n:'Лабиринт',d:'Провести героя по маршруту',mech:'Стрелки клавиатуры, свайп, стены'},
+ {n:'Своя игра',d:'Таблица тем и стоимости вопросов',mech:'Выбор ячейки, торги, блокировка тем'},
+ {n:'Крестики-нолики с заданиями',d:'Ход после верного ответа',mech:'Игровое поле, ход против компьютера'},
+ {n:'Гонка / прогресс-трек',d:'Кто быстрее пройдёт все уровни',mech:'Трек с фишками, скорость, очки'},
+ {n:'Карточная битва',d:'Карта с вопросом против карты соперника',mech:'Колода, розыгрыш, урон за верный ответ'},
+ {n:'Тренажёр (бесконечный)',d:'Много однотипных заданий',mech:'Поток заданий, отработка навыка'},
+ {n:'Интерактивный кроссворд',d:'Сетка букв, слова по определениям',mech:'Ввод букв, пересечения, проверка слова'},
+ {n:'Сортировка по корзинам',d:'Распределить объекты по группам',mech:'Корзины, drag-and-drop, проверка групп'},
+ {n:'Диалог с выбором',d:'Ветвящаяся история с решениями ученика',mech:'Реплики, варианты выбора, несколько концовок'}
+];
+var FX=[{k:'parchment',l:'пергамент / бумага'},{k:'neon',l:'неон'},{k:'pixel',l:'пиксели'},{k:'watercolor',l:'акварель'},{k:'vignette',l:'виньетка'},{k:'glow',l:'свечение'},{k:'weather',l:'дождь / снег'},{k:'torn',l:'рваные края'},{k:'scotch',l:'скотч'},{k:'grid',l:'клетка / линейка'}];
+var SCREENS=[{k:'title',l:'Титульный',d:1},{k:'intro',l:'Интро',d:1},{k:'map',l:'Карта / локация',d:1},{k:'task',l:'Задание',d:1},{k:'reward',l:'Награда',d:1},{k:'final',l:'Финал',d:1}];
+var CTRL=[{k:'btn',l:'клик по кнопкам',d:1},{k:'el',l:'клик по элементам',d:1},{k:'input',l:'ввод текста',d:1},{k:'select',l:'выбор из списка',d:1},{k:'dnd',l:'drag-and-drop',d:1},{k:'keys',l:'стрелки клавиатуры',d:0},{k:'swipe',l:'свайп',d:0},{k:'letters',l:'клик по буквам',d:0}];
+var PT=[{k:'choice',l:'выбор ответа'},{k:'insert',l:'вставка слова / буквы'},{k:'match',l:'установи соответствие'},{k:'tf',l:'верно / неверно'},{k:'fix',l:'исправь ошибку'},{k:'order',l:'расставь по порядку'},{k:'open',l:'открытый ответ'},{k:'signs',l:'расстановка знаков'},{k:'morph',l:'морфология'},{k:'stress',l:'ударения'},{k:'find',l:'найди ошибку'},{k:'word',l:'составь слово'},{k:'syn',l:'синонимы / антонимы'}];
+var FB=[{k:'greenred',l:'зелёный / красный',d:1},{k:'shake',l:'тряска',d:1},{k:'salut',l:'салют',d:1},{k:'progress',l:'прогресс-бар',d:1},{k:'score',l:'счётчик очков',d:1},{k:'lives',l:'счётчик жизней',d:1},{k:'timer',l:'таймер',d:0},{k:'hints',l:'подсказки',d:1}];
+var RW=[{k:'card',l:'карточка / страница',d:1},{k:'anim',l:'анимация',d:1},{k:'points',l:'баллы / оценка',d:1},{k:'sound',l:'звук',d:1},{k:'secret',l:'секретный уровень',d:0}];
+var FXX=[
+ {k:'shakeScreen',l:'Тряска всего экрана',s:'экран вздрагивает при потере жизни',d:0},
+ {k:'confetti',l:'Конфетти при верном ответе',s:'сыплются цветные конфетти',d:1},
+ {k:'fireworks',l:'Фейерверк в финале',s:'залп конфетти на награде',d:1},
+ {k:'flash',l:'Вспышка экрана',s:'короткая белая вспышка при успехе',d:0},
+ {k:'floatPoints',l:'Всплывающие «+баллы»',s:'цифры вылетают в месте клика',d:0},
+ {k:'typewriter',l:'Эффект печатной машинки',s:'текст легенды появляется по буквам',d:0},
+ {k:'hintPenalty',l:'Подсказка за минус балл',s:'подсказка стоит 1 балл',d:0},
+ {k:'praise',l:'Похвала словами',s:'«Отлично!», «Так держать!», «Почти!»',d:1},
+ {k:'glowBtn',l:'Подсветка кнопок при наведении',s:'кнопки «дышат» и подсвечиваются',d:1},
+ {k:'particles',l:'Частицы и искры на фоне',s:'лёгкая анимация фона',d:0}
+];
+var PR=[
+ {k:'combo',l:'Комбо-серия x2',s:'подряд без ошибок - двойные баллы',d:0},
+ {k:'exp',l:'Шкала опыта (RPG)',s:'опыт растёт и виден на экране',d:0},
+ {k:'checkpoints',l:'Чекпоинты',s:'возврат к любому пройденному уровню',d:0},
+ {k:'starmap',l:'Звёзды за уровень',s:'1-3 звезды в зависимости от результата',d:0},
+ {k:'hud',l:'Панель статуса сверху',s:'очки, жизни, таймер и прогресс в одной строке',d:1}
+];
+var CH=[
+ {k:'dialog',l:'Персонаж-помощник с репликами',s:'герой комментирует задания',d:1},
+ {k:'catch',l:'Персонаж ловит предметы',s:'мини-игра: ловит правильные ответы',d:0},
+ {k:'grow',l:'Персонаж растёт / одевается',s:'за баллы открывается новый облик героя',d:0},
+ {k:'mascotHint',l:'Персонаж даёт подсказки',s:'реплика-подсказка от героя',d:0},
+ {k:'voiceover',l:'Озвучка реплик',s:'синтез речи браузера (speechSynthesis)',d:0}
+];
+var GP=[
+ {k:'boss',l:'Босс-уровень в конце',s:'финальное задание с двойными баллами',d:0},
+ {k:'secondTry',l:'Вторая попытка',s:'первая ошибка не засчитывается сразу',d:1},
+ {k:'skip',l:'Пропуск задания',s:'можно пропустить и вернуться позже',d:0},
+ {k:'randomBonus',l:'Случайные бонусы',s:'иногда выпадает «+2 балла»',d:0},
+ {k:'branch',l:'Ветвление сюжета',s:'выбор пути меняет следующий уровень',d:0},
+ {k:'inventory',l:'Инвентарь предметов',s:'собранные артефакты видны на экране',d:0},
+ {k:'difficulty',l:'Рост сложности',s:'каждый уровень труднее предыдущего',d:0},
+ {k:'duel',l:'Режим дуэли (2 игрока)',s:'по очереди за одним устройстве',d:0},
+ {k:'timeAttack',l:'Режим «на скорость»',s:'бонус за быстрое прохождение',d:0}
+];
+var MG=[
+ {k:'catch',l:'Ловля знаний',s:'персонаж ловит правильные ответы',d:0},
+ {k:'memory',l:'Найди пару',s:'карточки: вопрос - ответ',d:0},
+ {k:'clicker',l:'Кликер на 20 секунд',s:'успеть кликнуть верные ответы',d:0},
+ {k:'puzzle',l:'Собери картинку',s:'пазл из 9 частей',d:0},
+ {k:'maze',l:'Лабиринт',s:'провести героя стрелками',d:0},
+ {k:'bonus',l:'Бонусный уровень',s:'открывается после серии верных ответов',d:0}
+];
+var TECH=[
+ {k:'tailwind',l:'Tailwind',d:0},{k:'bootstrap',l:'Bootstrap',d:0},{k:'gfonts',l:'Google Fonts',d:1},{k:'clean',l:'чистый CSS',d:1},
+ {k:'pc',l:'ПК',d:1},{k:'tablet',l:'планшет',d:1},{k:'phone',l:'телефон (кнопки не меньше 44px)',d:0},
+ {k:'onefile',l:'один HTML-файл без внешних зависимостей (кроме CDN)',d:1},
+ {k:'comments',l:'комментарии к коду для понимания структуры',d:1},
+ {k:'touch',l:'drag-and-drop работает мышью и пальцем (touch)',d:1},
+ {k:'save',l:'сохранение прогресса в localStorage',d:0},
+ {k:'print',l:'версия для печати',d:0},
+ {k:'ready',l:'код готов к использованию: скопировал и открыл в браузере',d:1}
+];
+var TASK_MECH=[
+ {k:'',l:'- механика не выбрана -'},
+ {k:'confetti',l:'Конфетти при верном ответе'},
+ {k:'shakeScreen',l:'Тряска экрана при ошибке'},
+ {k:'life',l:'Минус жизнь при ошибке'},
+ {k:'boss',l:'Босс-уровень: двойные баллы'},
+ {k:'timer',l:'Таймер на задание'},
+ {k:'hint',l:'Подсказка от персонажа'},
+ {k:'sound',l:'Звуковой эффект'},
+ {k:'salut',l:'Салют / фейерверк'},
+ {k:'catch',l:'Мини-игра: персонаж ловит предметы'},
+ {k:'dnd',l:'Перетаскивание (drag-and-drop)'},
+ {k:'clicker',l:'Кликер: успеть за время'},
+ {k:'memory',l:'Найди пару (карточки)'},
+ {k:'combo',l:'Комбо x2 за серию'},
+ {k:'floatPoints',l:'Всплывающие «+баллы»'},
+ {k:'artifact',l:'Открывает артефакт / предмет инвентаря'},
+ {k:'map',l:'Открывает новую точку на карте'},
+ {k:'secret',l:'Секретный бонус'},
+ {k:'dialog',l:'Реплика персонажа после ответа'},
+ {k:'bonus',l:'Случайный бонус (+2 балла)'}
+];
+var MOODS=['загадочная','весёлая','серьёзная','таинственная','уютная','добрая','сказочная','эпичная','мрачная','напряжённая','футуристическая','детективная','приключенческая','ретро','аниме','спокойная','дружелюбная','индустриальная','киберпанк','мистическая'];
+var FONTS={'Рукописные':['Marck Script','Caveat','Pacifico','Indie Flower','Satisfy'],'Гротеск':['Russo One','Bebas Neue','Oswald','Anton','Inter'],'С засечками':['Playfair Display','Lora','Merriweather','Old Standard TT'],'Моноширинные':['Press Start 2P','Space Mono','Courier Prime'],'Тематические':['Creepster','Mountains of Christmas']};
+var TASK_TYPES=[{k:'choice',l:'Выбор ответа (1)'},{k:'multi',l:'Несколько правильных'},{k:'tf',l:'Верно / Неверно'},{k:'input',l:'Вставка слова / числа'},{k:'match',l:'Установи соответствие'},{k:'order',l:'Расставь по порядку'},{k:'dnd',l:'Перетаскивание по категориям'},{k:'open',l:'Открытый ответ'}];
+var TASK2PT={choice:'choice',multi:'choice',tf:'tf',input:'insert',match:'match',order:'order',dnd:'match',open:'open'};
+var SLOT_DEFS=[
+ {k:'title',n:'Фон титульного экрана',d:'широкая сцена в стиле игры, место под заголовок'},
+ {k:'hero',n:'Персонаж / герой',d:'проводник игры, крупно, без текста'},
+ {k:'map',n:'Карта / локация',d:'маршрут уровней и точки-остановки'},
+ {k:'reward',n:'Награда',d:'артефакт, медаль, сундук, страница дневника'},
+ {k:'final',n:'Финальная сцена',d:'праздничный финал, салют'},
+ {k:'task',n:'Картинки к заданиям',d:'иллюстрация к каждому заданию (по числу заданий)'}
+];
+var IMG_MODES=[
+ {k:'ai',i:'AI',n:'Сгенерировать ИИ',d:'В промт добавится блок «сгенерируй изображения» и готовый промт для каждой картинки: фон, персонаж, карта, награда, финал, задания и дополнительные элементы.'},
+ {k:'ph',i:'PH',n:'Заглушки (плейсхолдеры)',d:'В промт попадёт строка из шаблона: «Изображения: плейсхолдеры с описанием в стиле игры» + кнопка «+» в игре для подстановки своих картинок.'},
+ {k:'lib',i:'24',n:'Свои через Базис24',d:'Картинки добавлю позже сам. В игре будет «+» в левом нижнем углу: загрузил файлы по слотам - нажал «Скачать готовую игру» - получил файл с закрытым кодом.'}
+];
+var MECH_PRESETS=[
+ {n:'Спокойно',d:'без таймера и жизней',ctrl:['btn','el','input','select'],fb:['greenred','progress','score','hints'],fx:['praise','glowBtn'],pr:['hud'],rw:['card','points'],ch:['dialog'],gp:['secondTry'],mg:[],sc:['title','intro','task','final']},
+ {n:'Квест-приключение',d:'сюжет, карта, босс, награды',ctrl:['btn','el','input','select','dnd'],fb:['greenred','shake','salut','progress','score','lives','hints'],fx:['confetti','fireworks','typewriter','floatPoints','praise'],pr:['hud','combo'],rw:['card','anim','points','sound','secret'],ch:['dialog','mascotHint'],gp:['boss','secondTry','randomBonus'],mg:['catch'],sc:['title','intro','map','task','reward','final']},
+ {n:'Соревнование',d:'таймер, жизни, очки, комбо',ctrl:['btn','el'],fb:['greenred','shake','progress','score','lives','timer'],fx:['confetti','floatPoints','shakeScreen'],pr:['hud','combo'],rw:['anim','points','sound'],ch:[],gp:['timeAttack'],mg:['clicker'],sc:['title','task','final']},
+ {n:'Максимум эффектов',d:'салют, тряска, мини-игры',ctrl:['btn','el','input','select','dnd','keys','swipe'],fb:['greenred','shake','salut','progress','score','lives','timer','hints'],fx:['shakeScreen','confetti','fireworks','flash','floatPoints','typewriter','hintPenalty','praise','glowBtn','particles'],pr:['hud','combo','exp','starmap','checkpoints'],rw:['card','anim','points','sound','secret'],ch:['dialog','catch','grow','mascotHint'],gp:['boss','secondTry','skip','randomBonus','branch','inventory','difficulty'],mg:['catch','memory','clicker','bonus'],sc:['title','intro','map','task','reward','final']},
+ {n:'Минимум',d:'только вопрос и проверка',ctrl:['btn','el'],fb:['greenred','progress'],fx:['praise'],pr:['hud'],rw:['points'],ch:[],gp:[],mg:[],sc:['title','task','final']}
+];
+var MECH_TABLE=[['Клик по кнопкам',"addEventListener('click')",'Кнопки «Идти», «Стоять»'],['Клик по элементам',"addEventListener('click')",'Выбор слова, буквы'],['Ввод текста','input, textarea','Вставка пропущенного слова'],['Выбор из списка','select, radio','Определение падежа'],['Drag-and-Drop','drag events, touch events','Перетаскивание в колонки'],['Стрелки клавиатуры','keydown / keyup','Управление персонажем'],['Свайп','touchstart / touchend','Tinder-стиль'],['Таймер','setInterval, setTimeout','Ограничение времени'],['Анимация','CSS keyframes, requestAnimationFrame','Падение, движение, салют'],['Прогресс-бар','CSS width + JS','Отображение прохождения'],['Счётчик очков','JS переменные','Баллы, жизни, опыт'],['Модальные окна','display: block / none','Задания, награды'],['Карта / локации','SVG, Canvas','Интерактивная карта'],['Эффект печатной машинки','setInterval + textContent','Появление текста по буквам'],['Звук','Web Audio API','Эффекты, фоновая музыка'],['Пиксельная графика','Canvas','Ретро-игры'],['Переключение экранов','display: none / block','Многоэкранная игра'],['Скачивание файла','Blob + a.download','Экспорт готовой игры']];
+var SUBJ_TABLE=[['Русский язык','Ударения','Клик по ударной букве в слове','2-11'],['Русский язык','Орфограммы','Вставка пропущенной буквы','1-6'],['Русский язык','Состав слова','Drag-and-drop частей слова','2-6'],['Русский язык','Части речи','Сортировка слов по категориям','2-7'],['Русский язык','Падежи','Выбор из списка, вставка окончания','3-6'],['Русский язык','Паронимы','Выбор правильного слова','8-11'],['Русский язык','Деепричастия','Найди ошибку в обороте','7-11'],['Русский язык','Н/НН','Выбор правильного написания','6-11'],['Русский язык','Фразеологизмы','Соотнесение со значением','4-9'],['Русский язык','Синтаксис','Расстановка запятых','5-11'],['Математика','Устный счёт','Нажать правильный ответ (аркада)','1-6'],['Математика','Таблица умножения','Выбор ответа, кликер','2-4'],['Математика','Уравнения','Ввод ответа','4-9'],['Математика','Геометрия','Drag-and-drop фигур','5-11'],['Математика','Дроби','Выбор правильной дроби','5-7'],['Математика','Проценты','Решение задач','6-9'],['Окружающий мир','Классификация','Живое / неживое - корзины','1-4'],['История','Хронология','Расставь по порядку, соответствие даты и события','5-11'],['Биология','Строение клетки','Клик по частям, классификация','5-9'],['География','Работа с картой','Клик по объекту, климатограммы','5-10'],['Физика','Формулы','Соотнесение, выбор правильной формулы','7-11'],['Химия','Формулы веществ','Уравнения реакций','8-11'],['Информатика','Логика','Последовательности, блок-схемы','5-11'],['Иностранный язык','Слово и картинка','Соотнесение, грамматика','2-11']];
+var ALG_TABLE=[['1','Выбрать предмет и класс','Русский язык, 4 класс'],['2','Выбрать вселенную и стиль','Гравити Фолз, дневник, сепия'],['3','Выбрать тип игры','Квест'],['4','Продумать сюжет','Собрать страницы дневника'],['5','Выбрать механику','Карта + задания + награды'],['6','Подготовить задания','6 заданий по ВПР'],['7','Указать технику и картинки','Один HTML, адаптивность, «+» для картинок']];
+var FONT_STYLE={'Marck Script':'Элегантный, небрежный','Caveat':'Небрежный, детский','Pacifico':'Весёлый, летний','Indie Flower':'Наивный, ручной','Satisfy':'Элегантный, плавный','Russo One':'Жирный, динамичный','Bebas Neue':'Узкий, жирный','Oswald':'Современный, сжатый','Anton':'Жирный, контрастный','Inter':'Современный, чистый','Playfair Display':'Элегантный, классический','Lora':'Книжный, уютный','Merriweather':'Строгий, серьёзный','Old Standard TT':'Исторический, античный','Press Start 2P':'Пиксельный, ретро','Space Mono':'Техничный, футуристический','Courier Prime':'Машинопись, хакерский','Creepster':'Страшный, хэллоуинский','Mountains of Christmas':'Зимний, сказочный'};
+var FONT_USE={'Marck Script':'Заголовки, дневники','Caveat':'Текст заданий','Pacifico':'Детские игры','Indie Flower':'Младшие классы','Satisfy':'Волшебные темы','Russo One':'Кнопки, акценты','Bebas Neue':'Заголовки экранов','Oswald':'Техно / киберпанк','Anton':'Плакатный стиль','Inter':'Основной текст','Playfair Display':'Заголовки, фэнтези','Lora':'Текст, средние века','Merriweather':'Старшие классы','Old Standard TT':'Древние темы','Press Start 2P':'Ретро-игры','Space Mono':'Киберпанк','Courier Prime':'Хакерские темы','Creepster':'Мистические темы','Mountains of Christmas':'Новогодние темы'};
+
+var GAME_IDEAS=[{"id":"g01","title":"Небесный экспресс","cat":"Путешествия","emoji":"🚂","style":"ар-деко и мягкий стимпанк, небесные станции, латунные часы","gtype":"Квест","preset":"Спокойно","route":"Вокзал отправления → четыре станции над облаками → мост ветров → конечная станция","mechanics":"Игрок выбирает станцию на схеме, собирает билет из частей за ответы и переключает стрелки маршрута","twist":"На каждой станции собственная погода и мини-правило: туман раскрывается только после двух правильных ответов","scene":"панорамы воздушных рельсов, облака слоями, паровоз и карта линий","reward":"золотой билет машиниста","pal":["#edf5fb","#326a84","#263747","#e3aa5e"],"pace":"Без таймера"},{"id":"g02","title":"Капитан воздушного шара","cat":"Путешествия","emoji":"🎈","style":"акварельная открытка, пастель, уютные облака","gtype":"Квест","preset":"Спокойно","route":"Луг старта → долина воздушных потоков → остров птиц → облачный замок → посадка","mechanics":"Игрок регулирует высоту шара ползунком, отвечает на вопросы на островах и собирает флажки маршрута","twist":"После ответа направление ветра меняется, но ошибку можно исправить без потери прогресса","scene":"объёмный воздушный шар, акварельные горы, мягкие солнечные блики","reward":"коллекция разноцветных вымпелов","pal":["#f8f4ec","#d67882","#334c65","#efbb67"],"pace":"Без таймера"},{"id":"g03","title":"Батискаф исследователя","cat":"Путешествия","emoji":"🐠","style":"глубоководная иллюстрация, бирюза, светящиеся рыбы","gtype":"Симулятор","preset":"Приключение","route":"Порт → коралловая отмель → водорослевый лес → затонувший архив → поверхность","mechanics":"Игрок ведёт батискаф между отметками глубины, сканирует объекты кликом и пополняет батарею правильными ответами","twist":"При ошибке датчики затемняются, но появляется подсказка и возможность восстановить показания","scene":"подводные слои с параллаксом, иллюминатор, приборная панель","reward":"атлас морских открытий","pal":["#e6f7f4","#176d83","#123c50","#f6b65d"],"pace":"Без таймера"},{"id":"g04","title":"Порталы эпох","cat":"Путешествия","emoji":"🌀","style":"коллаж исторических эпох и мягкие магические порталы","gtype":"Квест","preset":"Приключение","route":"Зал хронологии → древний город → замок учёных → город будущего → возвращение","mechanics":"Игрок вращает кольцо портала, подбирает ключ времени и собирает временную ленту","twist":"Две ветви путешествия выбираются пользователем и ведут к разным визуальным концовкам","scene":"полупрозрачные портальные кольца, песочные часы, старинные и футуристические здания","reward":"компас времени","pal":["#f5ebdc","#745b9c","#342d4b","#dbaf67"],"pace":"Без таймера"},{"id":"g05","title":"Космическая почта","cat":"Путешествия","emoji":"📨","style":"ретрофутуризм, маленькие планеты, голубой космос","gtype":"Степпер (пошаговая)","preset":"Спокойно","route":"Орбитальная сортировка → Луна → астероидная станция → Марс → главный почтамт","mechanics":"Игрок прикрепляет к заданиям правильные почтовые марки, сортирует письма и отправляет дрона по маршруту","twist":"Новые планеты открываются только после доставки писем предыдущего сектора","scene":"крошечные планеты, светящиеся конверты, уютный космопорт","reward":"значок звёздного почтальона","pal":["#edf1fc","#405a9a","#262c4b","#f5cc79"],"pace":"Без таймера"},{"id":"g06","title":"Детективное бюро","cat":"Тайны","emoji":"🔎","style":"ретро-детектив, дождливое окно, блокнот следователя","gtype":"Escape-room","preset":"Приключение","route":"Приём дела → опрос персонажей → доска улик → сопоставление фактов → раскрытие","mechanics":"Игрок открывает карточки улик, сопоставляет факты и прикалывает заметки на доску пробковыми кнопками","twist":"Каждый верный ответ открывает фрагмент рисунка-улики, финальная догадка доступна после сбора всех","scene":"письменный стол детектива, лампа, печатная машинка и корковые панели","reward":"диплом внимательного детектива","pal":["#f1eadf","#70533d","#312e2b","#b68c56"],"pace":"Без таймера"},{"id":"g07","title":"Библиотека потайных полок","cat":"Тайны","emoji":"📚","style":"сказочная библиотека, бархатная зелень и медь","gtype":"Лабиринт","preset":"Приключение","route":"Читальный зал → лестница каталогов → отдел редкостей → закрытая башня → манускрипт","mechanics":"Игрок перемещается по книжному лабиринту стрелками, выбирает правильные корешки и складывает страницу","twist":"Некоторые полки вращаются после ответа, открывая короткий проход в другую комнату","scene":"высокие книжные шкафы, лестницы, сияющая пыль и дерево","reward":"печать хранителя книг","pal":["#f3ebd8","#336659","#293d36","#c79b5c"],"pace":"Без таймера"},{"id":"g08","title":"Загадка старого маяка","cat":"Тайны","emoji":"🗼","style":"морской туман, свет маяка, сумеречная акварель","gtype":"Квест","preset":"Приключение","route":"Пирс → дом смотрителя → лестница → линза фонаря → вершина","mechanics":"Игрок собирает части линзы, направляет луч на метки и читает записки смотрителя","twist":"У каждого этажа свой тип мини-игры: выбор, порядок, пары, ввод и финальный код","scene":"каменистый берег, луч света в тумане, мокрые доски","reward":"медаль хранителя маяка","pal":["#eff4f1","#376e83","#2d3a43","#efc577"],"pace":"Без таймера"},{"id":"g09","title":"Остров кодов","cat":"Тайны","emoji":"🏝️","style":"карта сокровищ, бумага, тропические растения","gtype":"Квест","preset":"Приключение","route":"Пляж → пальмовая тропа → каменные символы → пещера зеркал → сундук","mechanics":"Игрок расшифровывает знаки с помощью заданий, перемещает фишку по карте и поворачивает символы","twist":"В конце из найденных печатей собирается узор ключа без необходимости угадывать случайный пароль","scene":"остров сверху, бумажная карта, верёвки, каменные загадки","reward":"памятная монета исследователя","pal":["#f6edda","#43816b","#344b37","#dca652"],"pace":"Без таймера"},{"id":"g10","title":"Ночь в музее","cat":"Тайны","emoji":"🏛️","style":"волшебный музей, полумрак, музейные витрины","gtype":"Escape-room","preset":"Приключение","route":"Вестибюль → зал картин → зал находок → зал часов → выход на рассвете","mechanics":"Игрок исследует экспонаты, находит интерактивные таблички и собирает тайные символы","twist":"Экспонаты слегка оживают после ответа, а подсказки скрыты в инвентаре карточек","scene":"музейные залы, золотистая подсветка, стеклянные витрины","reward":"пропуск почётного экскурсовода","pal":["#f0ecdf","#735e88","#322c41","#dcbf78"],"pace":"Без таймера"},{"id":"g11","title":"Фабрика роботов","cat":"Мастерские","emoji":"🤖","style":"конструктор будущего, белый, мята, прозрачные панели","gtype":"Симулятор","preset":"Приключение","route":"Чертёж → сортировка деталей → сборка корпуса → тест программы → презентация робота","mechanics":"Игрок перетаскивает детали по слотам, проходит вопросы для активации модулей и запускает тест","twist":"При разных выборах деталей меняется внешний вид готового робота, но все варианты решаемы","scene":"аккуратная мастерская, чертёжные сетки, механические руки","reward":"собственный робот-помощник","pal":["#f2f9fb","#27898b","#20394a","#f2b96c"],"pace":"Без таймера"},{"id":"g12","title":"Пекарня знаний","cat":"Мастерские","emoji":"🥐","style":"уютная кондитерская, сливочные цвета, мягкая 3D-графика","gtype":"Симулятор","preset":"Спокойно","route":"Получение заказа → подбор ингредиентов → замес → украшение → витрина","mechanics":"Игрок сортирует карточки-ингредиенты, решает вопросы и собирает выпечку по рецепту","twist":"Никакого настоящего рецепта не требуется: каждый этап — визуальная метафора решения задания","scene":"деревянные полки, кремовые плитки, выпечка и записки","reward":"золотая звезда пекаря","pal":["#fff4e6","#b47759","#543c34","#ebb75d"],"pace":"Без таймера"},{"id":"g13","title":"Ателье созвездий","cat":"Мастерские","emoji":"✨","style":"ночное небо, волшебная мастерская, световые нити","gtype":"Drag-and-Drop","preset":"Спокойно","route":"Выбор узора → сбор световых нитей → карта звёзд → украшение плаща → показ","mechanics":"Игрок соединяет звёзды линиями после верных ответов, размещает символы по шаблону","twist":"Каждая решённая задача добавляет новый сияющий узор; разные пути дают разные рисунки","scene":"светящиеся созвездия, бархат, стол мастера","reward":"звёздный плащ героя","pal":["#161d3f","#9b82db","#f3edff","#f1d28f"],"pace":"Без таймера"},{"id":"g14","title":"Строитель уютного города","cat":"Мастерские","emoji":"🏘️","style":"изометрический бумажный город, тёплые пастельные тона","gtype":"Симулятор","preset":"Спокойно","route":"Пустая площадь → дорога → школа → парк → праздничное открытие","mechanics":"За правильные ответы игрок получает стройматериалы, размещает дома и выбирает порядок построек","twist":"Город развивается в разных последовательностях; ни одна ошибка не разрушает готовые постройки","scene":"изометрические домики, деревья, мосты и спокойная анимация","reward":"панорама собственного города","pal":["#f2f6ed","#7d9a77","#364f48","#e5aa6c"],"pace":"Без таймера"},{"id":"g15","title":"Музыкальная лаборатория","cat":"Мастерские","emoji":"🎹","style":"яркая студия, геометрия, крупные музыкальные панели","gtype":"Ритм-игра","preset":"Спокойно","route":"Выбор мелодии → настройка инструментов → ритмический рисунок → запись → концерт","mechanics":"Игрок нажимает большие клавиши по подсказкам, расставляет ноты-карточки и отвечает на вопросы","twist":"Музыкальный ритм необязателен для правильности, отметка ответа определяется учебным заданием","scene":"музыкальный пульт, виниловые круги и бегущие ноты","reward":"своя короткая мелодия","pal":["#f7f3ff","#8163be","#34304d","#f4bc58"],"pace":"Без таймера"},{"id":"g16","title":"Ловец метеоров","cat":"Аркады","emoji":"☄️","style":"неоновый космос, синие и фиолетовые световые следы","gtype":"Аркада","preset":"На скорость","route":"Запуск → метеорный пояс → кометная трасса → звёздный вихрь → финиш","mechanics":"Игрок кликает по падающим вариантам ответов и собирает только правильные метеоры","twist":"Время ограничивает мини-раунд, но есть режим без таймера и повтор задачи","scene":"тёмное небо, световые следы, метеоры с крупными подписями","reward":"бриллиант космического пилота","pal":["#151631","#6c5be7","#f4f3ff","#53d7f0"],"pace":"С таймером"},{"id":"g17","title":"Прыжки по облачным островам","cat":"Аркады","emoji":"🦘","style":"яркая платформенная игра, облака и парящие камни","gtype":"Аркада","preset":"На скорость","route":"Остров старта → три высоты → мост радуги → дворец облаков","mechanics":"После правильного ответа персонаж автоматически перепрыгивает на следующий остров, игрок выбирает безопасную плитку-ответ","twist":"Каждой платформе соответствует отдельное задание, неверная плитка мягко подсвечивается и даётся повтор","scene":"мультяшные платформы, параллакс неба, радуга","reward":"корона путешественника","pal":["#eff9ff","#4a8bd0","#2d4763","#f1c565"],"pace":"Без таймера"},{"id":"g18","title":"Воздушный слалом","cat":"Аркады","emoji":"🛩️","style":"ретро-авиаплакат, лазурное небо и жёлтые облака","gtype":"Гонка / прогресс-трек","preset":"На скорость","route":"Аэродром → кольца ветра → облачная арка → воздушный мост → посадка","mechanics":"Игрок выбирает верные ворота-ответы, после выбора самолёт плавно перелетает к следующей точке","twist":"Каждое кольцо имеет собственную анимацию, скорость не влияет на правильность учебного ответа","scene":"авиамаршрут, самолётик на карте, воздушные кольца","reward":"значок аса авиации","pal":["#f3f9ff","#407ba5","#253f53","#e8b45c"],"pace":"С таймером"},{"id":"g19","title":"Ритм-парад","cat":"Аркады","emoji":"🥁","style":"уличный фестиваль, цветные флаги, весёлые персонажи","gtype":"Ритм-игра","preset":"На скорость","route":"Репетиция → два ритмических этапа → улица парада → большая сцена","mechanics":"Игрок выбирает карточки-ответы в такт движению, правильный ответ запускает короткую музыкальную фразу","twist":"В режиме доступности ритм можно полностью отключить без изменения заданий","scene":"конфетти, большой барабан, уличная сцена","reward":"кубок дирижёра","pal":["#fff8e8","#e77d62","#463f64","#f4bd62"],"pace":"Без таймера"},{"id":"g20","title":"Башня пружин","cat":"Аркады","emoji":"🗼","style":"мягкий пиксель-арт, пружинящие платформы и звёзды","gtype":"Степпер (пошаговая)","preset":"На скорость","route":"Основание башни → четыре яруса механизмов → вершина с флагом","mechanics":"Игрок решает вопрос, затем кликом выбирает пружину для прыжка на следующий ярус","twist":"Ошибочные ответы не сбрасывают этаж; есть индикатор уже достигнутой высоты","scene":"пиксельная башня, блоки, облака и флажок наверху","reward":"звезда покорителя башни","pal":["#e9edff","#6679bc","#2b315d","#f3c46d"],"pace":"Без таймера"},{"id":"g21","title":"Лабиринт фонариков","cat":"Головоломки","emoji":"🏮","style":"волшебный сад вечером, светящиеся дорожки","gtype":"Лабиринт","preset":"Приключение","route":"Ворота → три развилки → мост → круг фонарей → выход","mechanics":"Игрок поворачивает световые стрелки и двигается по доступным клеткам, двери открываются после ответа","twist":"Каждый ответ зажигает один фонарик и показывает подсказку к безопасному маршруту","scene":"каменная плитка, листья, золотые светильники","reward":"фонарик исследователя","pal":["#202f35","#4b826f","#f0eee6","#efc77b"],"pace":"Без таймера"},{"id":"g22","title":"Сад потерянных ключей","cat":"Головоломки","emoji":"🗝️","style":"ботаническая сказка, акварель, загадочные арки","gtype":"Escape-room","preset":"Спокойно","route":"Калитка → цветочный лабиринт → пять клумб → стеклянная оранжерея","mechanics":"Игрок решает задания и собирает части ключа; сопоставляет форму ключа с дверцами","twist":"Каждая клумба предлагает свой вид задач: сортировка, пары, выбор, последовательность","scene":"цветы, арки из ветвей, капельки росы","reward":"ключ сада знаний","pal":["#f5f8ea","#609777","#31574c","#edbe70"],"pace":"Без таймера"},{"id":"g23","title":"Витражная мозаика","cat":"Головоломки","emoji":"🪟","style":"собор светлых красок, матовое стекло, геометрия","gtype":"Пазл / мозаика","preset":"Спокойно","route":"Эскиз → сбор краёв → центральный орнамент → подсветка → галерея","mechanics":"Игрок получает по фрагменту витража за ответ и перетаскивает детали на сетку","twist":"Сложность пазла растёт от 4 до 12 деталей, но сами задания управляют выдачей деталей","scene":"цветные стеклянные сегменты, солнечные блики","reward":"готовый авторский витраж","pal":["#eef7fa","#598ab1","#2d5061","#e8af68"],"pace":"Без таймера"},{"id":"g24","title":"Энергетические дорожки","cat":"Головоломки","emoji":"🔋","style":"лаборатория будущего, линии электросхем, пастельный неон","gtype":"Пазл / мозаика","preset":"Приключение","route":"Генератор → мосты соединений → три блока → центральный экран","mechanics":"Игрок соединяет разноцветные точки на поле; правильные ответы открывают разрешённые соединения","twist":"Пути не пересекаются, маршрут можно перестроить в любой момент","scene":"чистая интерактивная схема, светящиеся узлы","reward":"активированное сердце станции","pal":["#edf7f7","#268c87","#244553","#f0c46e"],"pace":"Без таймера"},{"id":"g25","title":"Мастер часового механизма","cat":"Головоломки","emoji":"🕰️","style":"винтажные часы, медь, шестерёнки, книжный стиль","gtype":"Симулятор","preset":"Спокойно","route":"Циферблат → пружина → шестерёнки → маятник → бой часов","mechanics":"Игрок размещает шестерёнки в нужные гнёзда, а каждый ответ запускает новый модуль","twist":"Анимация механизма постепенная: сначала стрелки, затем маятник, затем весь корпус","scene":"часы в разрезе, шестерёнки, бронзовая рамка","reward":"запущенные волшебные часы","pal":["#f8f0dc","#8d6743","#443529","#d7aa62"],"pace":"Без таймера"},{"id":"g26","title":"Альбом открытий","cat":"Коллекции","emoji":"📔","style":"скетчбук путешественника, наклейки и бумажные кармашки","gtype":"Мемори / найди пару","preset":"Спокойно","route":"Чистый альбом → пять тематических разворотов → обложка достижений","mechanics":"Игрок переворачивает карточки, соединяет вопрос и ответ, вклеивает наклейки на страницу","twist":"Порядок разворотов выбирается свободно, все наклейки сохраняются до финала","scene":"бумага, наклейки, скрепки, карандаши","reward":"персональный альбом открытий","pal":["#fcf4e7","#8cae9e","#435454","#dda276"],"pace":"Без таймера"},{"id":"g27","title":"Оранжерея чудес","cat":"Коллекции","emoji":"🌿","style":"солнечная теплица, мягкая 3D-иллюстрация, листья","gtype":"Симулятор","preset":"Спокойно","route":"Семена → ростки → три грядки → цветение → выставка растений","mechanics":"За ответ игрок получает каплю воды или солнечный луч и выращивает виртуальные растения","twist":"Растения растут независимо: ученик сам выбирает, что полить следующим","scene":"стеклянная оранжерея, горшки, мягкие тени","reward":"цветущий сад знаний","pal":["#f1f8e9","#5e9e68","#385743","#e7b764"],"pace":"Без таймера"},{"id":"g28","title":"Заповедник фантастических существ","cat":"Коллекции","emoji":"🦉","style":"добрый сказочный заповедник, лес, сияющие домики","gtype":"RPG","preset":"Приключение","route":"Ворота → лесной пруд → луговая поляна → горный домик → питомник","mechanics":"Игрок решает задания, собирает безопасные символические ресурсы и открывает милых существ","twist":"Любое существо можно поселить в выбранном домике; характеристика меняется в зависимости от ответов","scene":"лесной заповедник, нежные персонажи, деревянные таблички","reward":"энциклопедия существ","pal":["#edf6ed","#538d81","#354b4a","#e4bd79"],"pace":"Без таймера"},{"id":"g29","title":"Почтовая коллекция","cat":"Коллекции","emoji":"✉️","style":"коллекционные марки, винтажный почтовый стол, сепия","gtype":"Drag-and-Drop","preset":"Спокойно","route":"Пустая папка → пять конвертов → сортировка марок → полная коллекция","mechanics":"Игрок собирает марки за задания, распределяет их по альбомным страницам и печатает штемпели","twist":"Сортировка марок на каждой странице соответствует предмету и сложности задания","scene":"старинные конверты, лупа, штемпели, альбом","reward":"золотая почтовая марка","pal":["#f8f1df","#947255","#443c33","#caa55d"],"pace":"Без таймера"},{"id":"g30","title":"Галерея шедевров","cat":"Коллекции","emoji":"🖼️","style":"арт-галерея, светлые стены, цветные абстракции","gtype":"Пазл / мозаика","preset":"Спокойно","route":"Пустые залы → подбор рам → открытие картин → экскурсия → вернисаж","mechanics":"Игрок за задания открывает фрагменты картин, размещает их в рамах и меняет экспозицию","twist":"Можно самостоятельно выбрать порядок залов и палитру рам, правильные ответы обязательны лишь для доступа","scene":"изящные рамы, панорамная галерея, арт-объекты","reward":"виртуальная выставка ученика","pal":["#f7f7f3","#657fa2","#3d465b","#ddbd7f"],"pace":"Без таймера"},{"id":"g31","title":"Железная дорога маршрутов","cat":"Стратегии","emoji":"🚆","style":"изометрическая настольная карта, железная дорога, зелёные долины","gtype":"Стратегия","preset":"Приключение","route":"Депо → прокладка рельсов → перевозки между станциями → мост → вокзал","mechanics":"Игрок зарабатывает рельсы верными ответами и прокладывает путь из клеток, избегая тупиков","twist":"Разрешено выбирать несколько равноценных маршрутов, после ошибки отрезок можно повернуть заново","scene":"настольные железнодорожные сегменты, мосты, горы","reward":"поезд знаний на своём маршруте","pal":["#f3f5e9","#628975","#304b47","#d5a666"],"pace":"Без таймера"},{"id":"g32","title":"Эко-город будущего","cat":"Стратегии","emoji":"🏙️","style":"современный зелёный город, изометрия, мягкие цвета","gtype":"Симулятор","preset":"Приключение","route":"Площадь → парк → транспорт → общественные пространства → праздник","mechanics":"За задания игрок получает ресурсы, выбирает улучшения и удерживает баланс трёх условных показателей","twist":"Нет проигрыша из-за ресурсов; ошибочный выбор сопровождается объяснением и повторной попыткой","scene":"зелёные крыши, трамвай, солнечные парки","reward":"знак городского архитектора","pal":["#edf8f5","#448c86","#2f4652","#dfae6b"],"pace":"Без таймера"},{"id":"g33","title":"Теплица четырёх сезонов","cat":"Стратегии","emoji":"🍁","style":"четыре времени года, бумажный сад, прозрачные панели","gtype":"Симулятор","preset":"Спокойно","route":"Весна → лето → осень → зима → возвращение к весне","mechanics":"Игрок выбирает действие и решает вопрос, чтобы активировать сезон и преобразить теплицу","twist":"Каждый сезон имеет собственный фон и тип задач, готовые растения остаются в финальной панораме","scene":"сезонные листья, снежинки, цветущие деревья, солнечный свет","reward":"календарь садовника","pal":["#f6f5ea","#7ba075","#3d5448","#e9b66a"],"pace":"Без таймера"},{"id":"g34","title":"Космический экипаж","cat":"Стратегии","emoji":"🧑‍🚀","style":"командный научный корабль, дисплеи, звёзды","gtype":"Симулятор","preset":"Приключение","route":"Набор команды → выбор маршрута → настройка модулей → исследование планеты → база","mechanics":"Игрок распределяет героев по станциям, выполняет задания и собирает части исследовательской карты","twist":"Последовательность модулей можно менять; разные герои дают разные подсказки без влияния на ответы","scene":"панель космического корабля, интерактивные экраны, планеты","reward":"знамя исследовательского экипажа","pal":["#edf1fb","#4c69ab","#273452","#dfb868"],"pace":"Без таймера"},{"id":"g35","title":"Фестиваль книг","cat":"Стратегии","emoji":"🎪","style":"уютная книжная ярмарка, гирлянды, деревянные киоски","gtype":"Симулятор","preset":"Спокойно","route":"Пустая площадь → книжные прилавки → афиша → гости → открытие фестиваля","mechanics":"За верные ответы игрок открывает тематические стенды и распределяет книги по полкам","twist":"У каждого гостя индивидуальная просьба в виде учебного задания, маршрут киосков свободный","scene":"площадь с шатрами, книжные стеллажи, флажки","reward":"медаль организатора фестиваля","pal":["#fff4e7","#a66d71","#563f48","#edb968"],"pace":"Без таймера"},{"id":"g36","title":"Машина превращений","cat":"Творчество","emoji":"⚙️","style":"безумно добрая лаборатория, картонные трубы, кнопки и колёсики","gtype":"Степпер (пошаговая)","preset":"Приключение","route":"Запуск двигателя → загрузка слова/числа → выбор преобразования → тест → демонстрация","mechanics":"Игрок протаскивает карточку в машину и решает задание, после чего объект меняет форму","twist":"Разные режимы дают разные визуальные превращения: шестерёнки, облако, световая вспышка","scene":"картонная машина, медные трубы, большие кнопки, колёса","reward":"сертификат изобретателя","pal":["#f2f4e9","#698f93","#3b4d55","#e3ac64"],"pace":"Без таймера"},{"id":"g37","title":"Палитра волшебного художника","cat":"Творчество","emoji":"🎨","style":"яркая акварельная студия, мазки краски, холсты","gtype":"Симулятор","preset":"Спокойно","route":"Пустой холст → выбор кистей → цветовые зоны → детали → выставка","mechanics":"Игрок получает цвет за верный ответ и закрашивает фрагменты картины по выбору","twist":"Нет единственной цветовой схемы, каждый ученик создаёт свой визуальный финал","scene":"палитра, кисти, чистые холсты, брызги акварели","reward":"собственная картина знаний","pal":["#fff7ed","#cc7393","#454265","#efba6c"],"pace":"Без таймера"},{"id":"g38","title":"Театр теней","cat":"Творчество","emoji":"🎭","style":"бумажный театр, лампы, силуэты, сценическая рамка","gtype":"Диалог с выбором","preset":"Спокойно","route":"Подготовка сцены → декорации → первый акт → второй акт → поклон","mechanics":"Игрок выбирает реплики и решает задания, после чего тени персонажей разыгрывают короткую сцену","twist":"Два разных сюжетных пути сходятся в добром финале, учебные ответы остаются обязательными","scene":"бумажные кулисы, картонные фигуры и мягкий свет","reward":"плакат собственного спектакля","pal":["#f6e9d8","#8f657e","#403346","#eab568"],"pace":"Без таймера"},{"id":"g39","title":"Конструктор карт","cat":"Творчество","emoji":"🗺️","style":"настольная география, состаренная бумага, цветные значки","gtype":"Drag-and-Drop","preset":"Спокойно","route":"Пустой материк → реки → горы → города → легенда карты","mechanics":"Игрок открывает элементы карты за задания и перетаскивает их на места, создавая уникальный остров","twist":"Несколько правильных мест для декораций, обязательные учебные точки проверяются отдельно","scene":"карта с рельефом, компас, цветные деревянные фишки","reward":"готовый фантазийный атлас","pal":["#f7efdb","#698b80","#3b4d4a","#d4a35e"],"pace":"Без таймера"},{"id":"g40","title":"Радиостанция историй","cat":"Творчество","emoji":"📻","style":"винтажная радиостудия, ламповый уют, звуковые волны","gtype":"Диалог с выбором","preset":"Спокойно","route":"Выбор темы → настройка частоты → три эпизода → эфир → финальные титры","mechanics":"Игрок решает задания для разблокировки фраз и собирает из карточек историю радиопередачи","twist":"Разные сочетания верно открытых карточек меняют текст истории, но не правильность заданий","scene":"радиомикрофон, пульт частот, мягкая подсветка, волновые полосы","reward":"запись своей радиопередачи","pal":["#f7efe3","#8b705f","#3d3837","#d7a96f"],"pace":"Без таймера"}];
+var tasks=[];
+var slots={};
+var shots=[];
+var ownTypes=[];
+var typeSel={};
+var step=1;
+var activeTab='prompt';
+var DEF={};
+var TEXTS={prompt:'',short:'',img:'',guide:''};
+function checkedVals(name){
+ return $$('input[name="'+name+'"]:checked').map(function(i){return i.value;});
+}
+function radioVal(name){
+ var e=document.querySelector('input[name="'+name+'"]:checked');
+ return e?e.value:'';
+}
+function extraList(){
+ return val('extraElems').split('\n').map(function(s){return s.trim();}).filter(function(s){return s!=='';});
+}
+function mechLabel(k){
+ var out='';
+ TASK_MECH.forEach(function(m){if(m.k===k){out=m.l;}});
+ return out;
+}
+function typeLabel(k){
+ var out='задание';
+ TASK_TYPES.forEach(function(t){if(t.k===k){out=t.l;}});
+ return out;
+}
+function mechOptions(sel){
+ return TASK_MECH.map(function(m){
+  return '<option value="'+m.k+'" '+(sel===m.k?'selected':'')+'>'+esc(m.l)+'</option>';
+ }).join('');
+}
+function chkGroup(hostId,items,name){
+ var host=byId(hostId);
+ if(!host){return;}
+ var map={};
+ var html=items.map(function(it){
+  var def=(it.d===undefined)?false:!!it.d;
+  map[it.k]=def;
+  return '<label class="chk"><input type="checkbox" name="'+name+'" value="'+esc(it.k)+'" '+(def?'checked':'')+'>'
+   +'<span><i class="box">'+CK+'</i><span class="tx">'+esc(it.l)+(it.s?'<small>'+esc(it.s)+'</small>':'')+'</span></span></label>';
+ }).join('');
+ host.innerHTML=html;
+ DEF[name]=map;
+}
+function buildBasics(){
+ byId('subject').innerHTML=SUBJECTS.map(function(s){return '<option value="'+esc(s.v)+'">'+esc(s.v)+'</option>';}).join('');
+ var grades='';
+ for(var g=1;g<=11;g++){
+  grades+='<label class="chip"><input type="radio" name="grade" value="'+g+'" '+(g===4?'checked':'')+'><span>'+g+'</span></label>';
+ }
+ byId('gradeChips').innerHTML=grades;
+ byId('mood').innerHTML=MOODS.map(function(m){return '<option>'+esc(m)+'</option>';}).join('');
+ var fopts='';
+ Object.keys(FONTS).forEach(function(gr){
+  fopts+='<optgroup label="'+esc(gr)+'">'+FONTS[gr].map(function(f){return '<option>'+esc(f)+'</option>';}).join('')+'</optgroup>';
+ });
+ ['fHead','fText','fBtn'].forEach(function(id){byId(id).innerHTML=fopts;});
+ byId('styleGrid').innerHTML=STYLES.map(function(s,i){
+  return '<label class="pick" data-idx="'+i+'"><input type="radio" name="style" value="'+i+'" '+(i===0?'checked':'')+'><span>'
+   +'<span class="p-n">'+esc(s.n)+'<i class="ck">'+CK+'</i></span>'
+   +'<span class="p-d">'+esc(s.d)+'</span>'
+   +'<span class="p-pal">'+s.p.slice(0,4).map(function(c){return '<i style="background:'+c+'"></i>';}).join('')+'</span>'
+   +'<span class="p-tag">'+esc(s.c)+' · '+esc(s.m)+'</span></span></label>';
+ }).join('');
+ byId('imgModes').innerHTML=IMG_MODES.map(function(m){
+  return '<label class="mode"><input type="radio" name="imgmode" value="'+m.k+'" '+(m.k==='lib'?'checked':'')+'>'
+   +'<span><span class="m-i">'+esc(m.i)+'</span><span class="m-n">'+esc(m.n)+'</span><span class="m-d">'+esc(m.d)+'</span></span></label>';
+ }).join('');
+ byId('mechPresets').innerHTML=MECH_PRESETS.map(function(m,i){
+  return '<button class="mini-btn'+(i===1?' pr':'')+'" type="button" data-act="mechPreset" data-mp="'+i+'">'
+   +esc(m.n)+'<br><span style="font-weight:600;opacity:.75;font-size:11px">'+esc(m.d)+'</span></button>';
+ }).join('');
+ chkGroup('fxList',FX.map(function(f){return {k:f.k,l:f.l,d:0};}),'fx');
+ chkGroup('screenList',SCREENS,'screens');
+ chkGroup('ctrlList',CTRL,'ctrl');
+ chkGroup('fbList',FB,'fb');
+ chkGroup('fxExtraList',FXX,'fxx');
+ chkGroup('prList',PR,'pr');
+ chkGroup('rwList',RW,'rw');
+ chkGroup('chList',CH,'ch');
+ chkGroup('gpList',GP,'gp');
+ chkGroup('mgList',MG,'mg');
+ chkGroup('techList',TECH,'tech');
+}
+function allTypes(){
+ return GTYPES.concat(ownTypes.map(function(t){return {n:t.n,d:t.d||'свой тип игры',mech:t.mech||'',own:1};}));
+}
+function renderTypes(){
+ var q=val('typeSearch').trim().toLowerCase();
+ var html=allTypes().map(function(t){
+  if(q&&(t.n.toLowerCase().indexOf(q)<0)&&(t.d.toLowerCase().indexOf(q)<0)){return '';}
+  return '<label class="pick"><input type="checkbox" name="gtype" value="'+esc(t.n)+'" '+(typeSel[t.n]?'checked':'')+'><span>'
+   +'<span class="p-n">'+esc(t.n)+'<i class="ck">'+CK+'</i></span>'
+   +'<span class="p-d">'+esc(t.d)+'</span>'
+   +'<span class="p-mech">Механики: '+esc(t.mech)+'</span>'
+   +(t.own?'<span class="p-tag">свой вариант</span>':'')+'</span></label>';
+ }).join('');
+ byId('typeGrid').innerHTML=html;
+ updateTypeCount();
+}
+function updateTypeCount(){
+ var n=Object.keys(typeSel).filter(function(k){return typeSel[k];}).length;
+ byId('typeCount').textContent=n+' '+plural(n,['тип','типа','типов']);
+}
+function syncTypeSel(){
+ $$('input[name="gtype"]').forEach(function(i){typeSel[i.value]=i.checked;});
+ updateTypeCount();
+}
+function selectedTypes(){
+ return Object.keys(typeSel).filter(function(k){return typeSel[k];});
+}
+function parseBulk(txt){
+ var out=[];
+ txt.split('\n').forEach(function(raw){
+  var line=raw.trim();
+  if(!line){return;}
+  var type='choice',body=line;
+  var m=line.match(/^([a-zA-Z\u0430-\u044f]+)\s*:\s*(.+)$/i);
+  if(m){
+   var k=m[1].toLowerCase();
+   var known=TASK_TYPES.some(function(t){return t.k===k;});
+   if(known){type=k;body=m[2];}
+   else{
+    var al={'\u0432\u044b\u0431\u043e\u0440':'choice','\u0432\u0441\u0442\u0430\u0432\u043a\u0430':'input','\u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0438\u0435':'match','\u0432\u0435\u0440\u043d\u043e':'tf','\u043f\u043e\u0440\u044f\u0434\u043e\u043a':'order','\u043f\u0435\u0440\u0435\u0442\u0430\u0449\u0438':'dnd','\u043e\u0442\u043a\u0440\u044b\u0442\u044b\u0439':'open'};
+    if(al[k]){type=al[k];body=m[2];}
+   }
+  }
+  var parts=body.split('|').map(function(s){return s.trim();}).filter(function(s){return s!=='';});
+  if(type==='match'){
+   var pairs=[];
+   parts.forEach(function(p){
+    var a=p.split(/\s*(?:=|->|\u2014)\s*/);
+    var left=(a[0]||'').trim();
+    var right=a.slice(1).join(' ').trim();
+    if(left&&right){pairs.push([left,right]);}
+   });
+   out.push({type:'match',text:'Установи соответствие',opts:pairs.map(function(p){return p[0]+' = '+p[1];}).join('\n'),ans:'',hint:'',pts:2,img:'',mech:''});
+  }else if(type==='dnd'){
+   var items=parts.filter(function(s){return s.indexOf('::')>=0;});
+   out.push({type:'dnd',text:'Распредели элементы по группам',opts:items.join('\n'),ans:'',hint:'',pts:2,img:'',mech:''});
+  }else if(type==='order'){
+   var first=parts.length>1?parts.shift():'Расставь по порядку';
+   out.push({type:'order',text:first,opts:parts.join('\n'),ans:'',hint:'',pts:2,img:'',mech:''});
+  }else if(type==='input'){
+   out.push({type:'input',text:parts.shift()||'',opts:'',ans:parts.shift()||'',hint:parts.shift()||'',pts:1,img:'',mech:''});
+  }else if(type==='tf'){
+   out.push({type:'tf',text:parts.shift()||'',opts:'Верно\nНеверно',ans:parts.shift()||'1',hint:parts.shift()||'',pts:1,img:'',mech:''});
+  }else if(type==='open'){
+   out.push({type:'open',text:parts.shift()||'',opts:'',ans:parts.shift()||'',hint:'',pts:2,img:'',mech:''});
+  }else{
+   var nums=parts.filter(function(p){return /^\d+(\s*,\s*\d+)*$/.test(p);});
+   var rest=parts.filter(function(p){return !/^\d+(\s*,\s*\d+)*$/.test(p);});
+   var hint='';
+   if(nums.length&&rest.length>1){hint=rest.pop();}
+   var text=rest.shift()||'';
+   var ans=nums.length?nums[nums.length-1].replace(/\s/g,''):'1';
+   out.push({type:type,text:text,opts:rest.join('\n'),ans:ans,hint:hint,pts:(type==='multi'?2:1),img:'',mech:''});
+  }
+ });
+ return out;
+}
+function syncTasksFromBulk(){
+ var old=tasks.slice();
+ var parsed=parseBulk(val('bulk'));
+ tasks=parsed.map(function(t,i){
+  t.mech=(old[i]&&old[i].mech)?old[i].mech:'';
+  return t;
+ });
+ renderTasks();
+}
+function renderTasks(){
+ var host=byId('taskList');
+ if(!host){return;}
+ if(!tasks.length){
+  host.innerHTML='<div class="hint">Напишите задания в поле выше (по одному в строке) - они появятся здесь, и для каждого можно выбрать игровую механику (не обязательно).</div>';
+ }else{
+  host.innerHTML=tasks.map(function(t,i){
+   var txt=(t.text||'').trim();
+   if(txt.length>64){txt=txt.slice(0,64)+'...';}
+   return '<div class="task-row" data-i="'+i+'">'
+    +'<div class="t-top"><span class="t-n">'+(i+1)+'</span>'
+    +'<span class="t-type-badge">'+esc(typeLabel(t.type))+'</span>'
+    +'<span class="t-text-ro" title="'+esc(t.text||'')+'">'+esc(txt||'без текста')+'</span>'
+    +(t.img?'<span class="t-img">с картинкой</span>':'')
+    +'<select class="t-mech" title="Игровая механика для этого задания (не обязательно)">'+mechOptions(t.mech||'')+'</select>'
+    +'</div></div>';
+  }).join('');
+ }
+ var tc=byId('taskCount');
+ if(tc){tc.textContent=tasks.length+' '+plural(tasks.length,['задание','задания','заданий']);}
+ var wm=0;
+ tasks.forEach(function(t){if(t.mech){wm++;}});
+ var wmEl=byId('mechTaskCount');
+ if(wmEl){wmEl.textContent=wm+' с механикой';}
+}
+function readTaskMechs(){
+ $$('#taskList .task-row').forEach(function(row){
+  var i=parseInt(row.getAttribute('data-i'),10);
+  var t=tasks[i];
+  if(!t){return;}
+  var sel=row.querySelector('.t-mech');
+  if(sel){t.mech=sel.value;}
+ });
+}
+function stubText(){
+ var d=collect();
+ var t=(d.topic&&d.topic!=='[тема]')?d.topic:'теме урока';
+ return 'choice: Выбери верный ответ по теме "'+t+'" | Вариант 1 | Вариант 2 | Вариант 3 | Вариант 4 | 1 | Вспомни правило\n'
+ +'input: Впиши правильный ответ: "'+t+'" | ответ | Ответ одним словом\n'
+ +'tf: Утверждение по теме "'+t+'" верно? | 1 | Проверь по учебнику\n'
+ +'match: Установи соответствие | понятие 1 = определение 1 | понятие 2 = определение 2\n'
+ +'order: Расставь по порядку | первый шаг | второй шаг | третий шаг\n'
+ +'dnd: Распредели по группам | элемент А :: группа 1 | элемент Б :: группа 2';
+}
+function drawShots(){
+ byId('shots').innerHTML=shots.map(function(s,i){
+  return '<div class="shot"><img src="'+s.url+'" alt="'+esc(s.name)+'"><button class="rm" type="button" data-i="'+i+'" title="Удалить">x</button><span class="nm">'+esc(s.name)+'</span></div>';
+ }).join('');
+ byId('shotCount').textContent=shots.length+' '+plural(shots.length,['скриншот','скриншота','скриншотов']);
+}
+function slotCard(s){
+ var st=slots[s.k]||{src:null,name:'',marked:false};
+ var filled=!!st.src||!!st.marked;
+ var note='';
+ if(st.name){note='<small class="okline">файл: '+esc(st.name)+'</small>';}
+ else if(st.src){note='<small class="okline">по ссылке</small>';}
+ else if(st.marked){note='<small class="okline">отмечено: добавлю через Базис24</small>';}
+ return '<div class="slot '+(filled?'has':'')+'" data-slot="'+s.k+'">'
+ +'<div class="slot-prev">'+(st.src?'<img src="'+esc(st.src)+'" alt="">':'нет файла')+'<button class="slot-rm" type="button" title="Убрать">x</button></div>'
+ +'<div class="slot-info"><b>'+esc(s.n)+'</b><small>'+esc(s.d)+'</small>'+note+'</div>'
+ +'<button class="slot-plus" type="button">＋ Отметить / добавить</button>'
+ +'<div class="slot-tools">'
+ +'<div class="r"><button class="mini-btn s-file" type="button">📁 Файл</button><button class="mini-btn s-mark" type="button">✅ Отметить</button></div>'
+ +'<div class="r"><input type="text" class="s-url" placeholder="https:// ссылка на картинку"><button class="mini-btn s-ok" type="button">OK</button></div>'
+ +'<button class="mini-btn s-prompt" type="button">📋 Промт для этой картинки</button>'
+ +'<input type="file" class="s-input" accept="image/*" hidden></div></div>';
+}
+function extraSlotsHtml(){
+ return extraList().map(function(el,i){
+  return '<div class="slot has" data-extra="'+i+'">'
+   +'<div class="slot-prev">＋</div>'
+   +'<div class="slot-info"><b>'+esc(el)+'</b><small>дополнительный элемент - свой промт</small></div>'
+   +'<button class="slot-plus" type="button" data-act="copyExtraPrompt" data-ei="'+i+'">📋 Промт для элемента</button></div>';
+ }).join('');
+}
+function renderSlots(){
+ var mainSlots=SLOT_DEFS.filter(function(s){return s.k!=='task';});
+ byId('slotsAi').innerHTML=mainSlots.map(slotCard).join('')+extraSlotsHtml();
+ byId('slots').innerHTML=SLOT_DEFS.map(slotCard).join('')+extraSlotsHtml();
+ var filled=SLOT_DEFS.filter(function(s){var st=slots[s.k];return st&&(st.src||st.marked);}).length;
+ var ex=extraList().length;
+ byId('imgStat').textContent=filled+' из '+SLOT_DEFS.length+' слотов'+(ex?' + '+ex+' доп.':'');
+ var ec=byId('extraCount');
+ if(ec){ec.textContent=ex+' '+plural(ex,['элемент','элемента','элементов']);}
+}
+function setImgMode(m){
+ $$('input[name="imgmode"]').forEach(function(i){i.checked=(i.value===m);});
+ show('modeAi',m==='ai');
+ show('modePh',m==='ph');
+ show('modeLib',m==='lib');
+ var hints={
+  ai:'Режим ИИ: в промт попадёт блок «сгенерируй изображения» и готовый промт для каждой картинки, включая дополнительные элементы из списка выше.',
+  ph:'Режим заглушек: в промте будет «Изображения: плейсхолдеры с описанием в стиле игры» + требование сделать кнопку «+» в левом нижнем углу игры, чтобы позже подставить свои картинки и скачать готовую игру.',
+  lib:'Режим Базис24: картинки НЕ генерируются. В промт попадёт требование: в игре плавающая кнопка «+» в ЛЕВОМ НИЖНЕМ УГЛУ -> панель загрузки файлов/ссылок по всем слотам -> кнопка «Скачать готовую игру» -> файл с картинками внутри и закрытым для редактирования кодом.'
+ };
+ byId('imgModeHint').textContent=hints[m]||'';
+ renderSlots();
+}
+function collect(){
+ var ss=val('subject');
+ var rec=null;
+ SUBJECTS.forEach(function(s){if(s.v===ss){rec=s;}});
+ if(!rec){rec=SUBJECTS[0];}
+ var custom=(ss==='Другой (вписать)');
+ var subj=custom?(val('subjectCustom').trim()||'[предмет]'):ss;
+ var subjGen=custom?subj:rec.g;
+ var si=parseInt(radioVal('style'),10)||0;
+ var st=STYLES[si]||STYLES[0];
+ var ownN=val('ownStyleName').trim();
+ readTaskMechs();
+ var g=parseInt(radioVal('grade'),10)||4;
+ var types=selectedTypes();
+ var cc=byId('closeCode');
+ return {
+  subject:subj,subjectGen:subjGen,grade:g,age:g+6,
+  topic:val('topic').trim()||'[тема]',
+  universe:ownN||st.n,
+  uniStyle:ownN?(val('ownStyleDesc').trim()||st.d):st.d,
+  mood:val('mood')||'весёлая',
+  visualTheme:val('visualTheme').trim()||st.vt,
+  plot:val('plot').trim()||'[придумайте легенду игры]',
+  levels:Math.max(1,parseInt(val('levels'),10)||6),
+  time:Math.max(1,parseInt(val('timeMin'),10)||15),
+  lives:Math.max(1,parseInt(val('livesN'),10)||3),
+  types:types,
+  gtype:types.length?types.join(' + '):'[тип игры]',
+  pal:{bg:val('cBg'),main:val('cMain'),text:val('cText'),accent:val('cAccent'),err:val('cErr'),ok:val('cOk')},
+  fonts:{h:val('fHead'),t:val('fText'),b:val('fBtn')},
+  fx:checkedVals('fx'),screens:checkedVals('screens'),ctrl:checkedVals('ctrl'),fb:checkedVals('fb'),
+  fxx:checkedVals('fxx'),pr:checkedVals('pr'),rw:checkedVals('rw'),ch:checkedVals('ch'),
+  gp:checkedVals('gp'),mg:checkedVals('mg'),tech:checkedVals('tech'),
+  grade90:val('g90')||'Отлично',grade70:val('g70')||'Хорошо',
+  grade50:val('g50')||'Удовлетворительно',gradeLow:val('gLow')||'Требуется доработка',
+  secretText:val('secretText'),
+  imgMode:radioVal('imgmode')||'ph',
+  extraElems:extraList(),
+  basisNote:val('basisNote').trim(),
+  closeCode:cc?!!cc.checked:true,
+  tasks:tasks,slots:slots,shots:shots
+ };
+}
+function line(arr,keys){
+ return arr.map(function(o){return (keys.indexOf(o.k)>=0?'\u2611 ':'\u2610 ')+o.l;}).join('   ');
+}
+function names(arr,keys){
+ return arr.filter(function(o){return keys.indexOf(o.k)>=0;}).map(function(o){return o.l;});
+}
+function imgPromptFor(key,name,desc,d){
+ var fmt=(key==='hero'||key==='reward')?'квадратный / вертикальный':'горизонтальный 16:9';
+ return 'Создай изображение для веб-игры по теме "'+d.topic+'" ('+d.subject+', '+d.grade+' класс, стиль "'+d.universe+'": '+d.uniStyle+').\n'
+ +'Слот: '+name+' - '+desc+'.\n'
+ +'1. Стиль: '+d.uniStyle+', атмосфера '+d.mood+'.\n'
+ +'2. Цветовая гамма: '+d.pal.main+', '+d.pal.bg+', '+d.pal.accent+'.\n'
+ +'3. Формат: '+fmt+'.\n'
+ +'4. Настроение: '+d.mood+', понятно детям '+d.age+' лет.\n'
+ +'Ограничения: без текста и букв на изображении, без пугающих элементов, оставить место для интерфейса игры.';
+}
+function extraPrompt(el,d){
+ return 'Создай изображение: '+el+'.\n'
+ +'Тема игры "'+d.topic+'" ('+d.subject+', '+d.grade+' класс).\n'
+ +'Стиль "'+d.universe+'" - '+d.uniStyle+', атмосфера '+d.mood+'.\n'
+ +'Цвета: '+d.pal.main+', '+d.pal.bg+', '+d.pal.accent+'.\n'
+ +'Формат: квадратный, элемент крупно, на прозрачном или однотонном фоне.\n'
+ +'Ограничения: без текста и букв, без пугающих деталей, понятно детям '+d.age+' лет.\n'
+ +'Назначение: элемент оформления веб-игры (иконка / рамка / предмет / персонаж).';
+}
+function usedTaskTypes(d){
+ var keys=[];
+ d.tasks.forEach(function(t){
+  var k=TASK2PT[t.type];
+  if(k&&keys.indexOf(k)<0){keys.push(k);}
+ });
+ return keys;
+}
+function buildTaskLines(d,L){
+ if(d.tasks.length){
+  d.tasks.forEach(function(t,i){
+   L.push('Задание '+(i+1)+': ['+typeLabel(t.type)+'] -> ['+(t.text||'текст задания')+'] -> ['+(t.ans||'-')+'] -> ['+(t.hint||'-')+']'+(t.img?' -> [с иллюстрацией]':''));
+   if(t.opts){L.push('   варианты / элементы: '+t.opts.split('\n').filter(Boolean).join(' | '));}
+   L.push('   баллы: '+(t.pts||1));
+   if(t.mech){L.push('   игровая механика задания: '+mechLabel(t.mech));}
+  });
+ }else{
+  var cnt=Math.min(3,d.levels);
+  for(var q=1;q<=cnt;q++){L.push('Задание '+q+': [тип] -> [текст] -> [ответ] -> [подсказка]');}
+ }
+ var withMech=d.tasks.filter(function(t){return !!t.mech;});
+ if(withMech.length){
+  L.push('');
+  L.push('ИГРОВЫЕ МЕХАНИКИ ПО ЗАДАНИЯМ (реализуй именно так):');
+  d.tasks.forEach(function(t,i){
+   if(!t.mech){return;}
+   L.push('- Задание '+(i+1)+': '+mechLabel(t.mech));
+  });
+ }
+ return L;
+}
+function imagesBlock(d,L){
+ var mainSlots=SLOT_DEFS.filter(function(s){return s.k!=='task';});
+ L.push('6. ИЗОБРАЖЕНИЯ');
+ if(d.imgMode==='ai'){
+  L.push('Режим: ГЕНЕРАЦИЯ ИИ. Сгенерируй изображения (или оставь под них подписанные места) для слотов: '+mainSlots.map(function(s){return s.n;}).join(', ')+(d.tasks.length?', а также иллюстрации к заданиям':'')+'.');
+  L.push('Промты для нейросети изображений (Qwen, Kandinsky, Шедеврум, Nano Banana):');
+  L.push('');
+  mainSlots.forEach(function(s){
+   L.push('- '+s.n.toUpperCase()+' ('+s.d+'):');
+   L.push(imgPromptFor(s.k,s.n,s.d,d));
+   L.push('');
+  });
+  L.push('- КАРТИНКИ К ЗАДАНИЯМ:');
+  L.push('Создай по одной иллюстрации к каждому заданию в стиле "'+d.universe+'" ('+d.uniStyle+'), палитра '+d.pal.main+' / '+d.pal.accent+', горизонтальный формат, без текста на картинке, понятно детям '+d.age+' лет.');
+ }else if(d.imgMode==='lib'){
+  L.push('Режим: СВОИ КАРТИНКИ ЧЕРЕЗ БАЗИС24 (или Canva / фотобанк / файлы учителя). Изображения НЕ генерировать - я добавлю их позже сам.');
+  L.push('Слоты под изображения:');
+  SLOT_DEFS.forEach(function(s,i){
+   var st=d.slots[s.k]||{src:null,name:'',marked:false};
+   var filled=!!st.src||!!st.marked;
+   var extra='';
+   if(s.k==='task'){extra=' - '+d.tasks.filter(function(t){return !!t.img;}).length+' из '+d.tasks.length+' заданий с картинками';}
+   else if(st.name){extra=' - файл: '+st.name;}
+   L.push((i+1)+'. '+s.n+' - '+(filled?'подобрано':'будет добавлено позже через Базис24')+extra);
+  });
+  if(d.basisNote){L.push('Комментарий учителя (что именно будет подставлено): '+d.basisNote);}
+  L.push('Требование к коду: вынеси пути к изображениям в объект IMG в начале скрипта (IMG.title, IMG.hero, IMG.map, IMG.reward, IMG.final, IMG.task1 ... IMG.taskN'+(d.extraElems.length?', а также ключи для дополнительных элементов: '+d.extraElems.map(function(el,i){return 'IMG.extra'+(i+1);}).join(', '):'')+'). Если значение пустое - показывай плейсхолдер в стиле игры с подписью. Вёрстка не должна ломаться без картинок.');
+  L.push('');
+  L.push('ОБЯЗАТЕЛЬНО: КНОПКА ДОБАВЛЕНИЯ КАРТИНОК ВНУТРИ САМОЙ ИГРЫ');
+  L.push('1. В ЛЕВОМ НИЖНЕМ УГЛУ игры - плавающая круглая кнопка "+" (position: fixed; left: 16px; bottom: 16px), видна на всех экранах и не перекрывает интерфейс.');
+  L.push('2. По нажатию на "+" открывается панель "Картинки игры": список всех слотов (фон титула, персонаж, карта, награда, финал, картинки заданий'+(d.extraElems.length?', а также: '+d.extraElems.join(', '):'')+').');
+  L.push('3. У каждого слота в панели: кнопка "Загрузить файл" (input type=file), поле "Вставить ссылку" и миниатюра-превью. Картинка подставляется сразу, без перезагрузки страницы.');
+  L.push('4. В панели есть кнопка "Скачать готовую игру" - выгружает текущий HTML-файл со ВСЕМИ вставленными картинками (внутри файла как base64), чтобы игра работала офлайн.');
+  if(d.closeCode){
+   L.push('5. Скачанный файл должен быть с ЗАКРЫТЫМ для дальнейшего редактирования кодом: JavaScript минифицирован и обфусцирован (нечитаемые имена переменных), комментарии и исходное форматирование удалены, панель "+" и режим редактирования в выгруженной версии отключены (флаг LOCKED = true), блокируются контекстное меню, выделение текста и F12, текст игры не редактируется.');
+  }else{
+   L.push('5. Скачанный файл - готовый к запуску: без панели редактирования, код минифицирован.');
+  }
+  L.push('6. До скачивания панель "+" активна (режим наполнения), после скачивания игра открывается сразу в игровом режиме.');
+  var attached=[];
+  d.shots.forEach(function(s){attached.push(s.name);});
+  SLOT_DEFS.forEach(function(s){var st=d.slots[s.k];if(st&&st.name&&attached.indexOf(st.name)<0){attached.push(st.name);}});
+  if(attached.length){L.push('К сообщению приложены файлы: '+attached.join(', ')+' - используй их как изображения игры.');}
+ }else{
+  L.push('Изображения: плейсхолдеры с описанием в стиле игры (рамка + подпись, что должно быть изображено). Картинки не генерировать.');
+  L.push('Дополнительно: в ЛЕВОМ НИЖНЕМ УГЛУ сделай плавающую кнопку "+", которая открывает панель подстановки своих картинок в плейсхолдеры (файл или ссылка, с превью) и кнопку "Скачать готовую игру" - выгрузка HTML со встроенными картинками и закрытым для редактирования кодом.');
+ }
+ if(d.extraElems.length){
+  L.push('');
+  L.push('ДОПОЛНИТЕЛЬНЫЕ ЭЛЕМЕНТЫ ('+d.extraElems.length+' шт.) - сделай под них отдельные слоты/ключи в объекте IMG и '+(d.imgMode==='ai'?'сгенерируй':'оставь плейсхолдеры с подписью, я подставлю свои')+':');
+  d.extraElems.forEach(function(el,i){
+   L.push((i+1)+'. '+el+' - стиль "'+d.universe+'" ('+d.uniStyle+'), палитра '+d.pal.main+' / '+d.pal.accent+', без текста на картинке, прозрачный или однотонный фон, понятно детям '+d.age+' лет.');
+  });
+ }
+ return L;
+}
+function buildPrompt(d){
+ var L=[];
+ var ptKeys=usedTaskTypes(d);
+ L.push('РОЛЬ: Ты - Senior Frontend-разработчик и геймдизайнер. Создай веб-игру (HTML + CSS + JS в одном файле): '+d.gtype+' по '+d.subject+' для '+d.grade+' класса в стиле "'+d.universe+'".');
+ L.push('');
+ L.push('1. ВИЗУАЛ И СТИЛЬ');
+ L.push('Тема: '+d.visualTheme);
+ L.push('Цвета: основной '+d.pal.main+' / фон '+d.pal.bg+' / текст '+d.pal.text+' / акцент '+d.pal.accent+' / ошибка '+d.pal.err+' / успех '+d.pal.ok);
+ L.push('Шрифты: заголовки '+d.fonts.h+' / текст '+d.fonts.t+' / кнопки '+d.fonts.b);
+ L.push('Эффекты: '+line(FX,d.fx));
+ L.push('Атмосфера: '+d.mood);
+ L.push('Описание стиля: '+d.uniStyle);
+ L.push('');
+ L.push('2. СТРУКТУРА');
+ L.push('Тип игры: '+d.gtype);
+ allTypes().forEach(function(t){
+  if(d.types.indexOf(t.n)>=0){
+   L.push('   - '+t.n+': '+t.d+(t.mech?' (механики: '+t.mech+')':''));
+  }
+ });
+ L.push('Уровней: '+(d.tasks.length||d.levels));
+ L.push('Сюжет/Легенда: '+d.plot);
+ L.push('Экраны: '+line(SCREENS,d.screens));
+ L.push('');
+ L.push('3. МЕХАНИКА');
+ L.push('Управление: '+line(CTRL,d.ctrl));
+ L.push('Типы заданий: '+line(PT,ptKeys));
+ L.push('Обратная связь: '+line(FB,d.fb));
+ L.push('Награды: '+line(RW,d.rw));
+ L.push('');
+ L.push('3.1. Дополнительные эффекты:');
+ if(d.fxx.length){names(FXX,d.fxx).forEach(function(t,i){L.push((i+1)+'. '+t);});}
+ else{L.push('- без дополнительных эффектов');}
+ if(d.pr.length){L.push('');L.push('3.2. Прогресс и счёт:');names(PR,d.pr).forEach(function(t){L.push('   - '+t);});}
+ if(d.ch.length){L.push('');L.push('3.3. Персонаж:');names(CH,d.ch).forEach(function(t){L.push('   - '+t);});}
+ if(d.gp.length){L.push('');L.push('3.4. Геймплей и усложнения:');names(GP,d.gp).forEach(function(t){L.push('   - '+t);});}
+ if(d.mg.length){L.push('');L.push('3.5. Мини-игры между уровнями:');names(MG,d.mg).forEach(function(t){L.push('   - '+t);});}
+ L.push('');
+ L.push('4. ЗАДАНИЯ');
+ L.push('Предмет: '+d.subject);
+ L.push('Класс: '+d.grade);
+ L.push('Тема: '+d.topic);
+ L.push('Возраст учеников: '+d.age+' лет');
+ buildTaskLines(d,L);
+ if(d.shots.length){
+  L.push('');
+  L.push('СКРИНШОТЫ ЗАДАНИЙ: к этому сообщению приложено '+d.shots.length+' '+plural(d.shots.length,['изображение','изображения','изображений'])+' ('+d.shots.map(function(s){return s.name;}).join(', ')+').');
+  L.push('Внимательно прочитай всё, что на них изображено, сохрани формулировки и перенеси эти задания в игру как уровни. Если на скриншотах нет ответов и подсказок - придумай их сам по теме "'+d.topic+'".');
+ }
+ L.push('Оценка: 90%+ = "'+d.grade90+'" / 70-89% = "'+d.grade70+'" / 50-69% = "'+d.grade50+'" / <50% = "'+d.gradeLow+'"');
+ L.push('');
+ L.push('5. ТЕХНИЧЕСКИ');
+ L.push('Библиотеки: '+line(TECH.filter(function(t){return ['tailwind','bootstrap','gfonts','clean'].indexOf(t.k)>=0;}),d.tech));
+ L.push('Адаптивность: '+line(TECH.filter(function(t){return ['pc','tablet','phone'].indexOf(t.k)>=0;}),d.tech));
+ L.push('Код: один HTML-файл, без внешних зависимостей (кроме CDN)');
+ var extraTech=[];
+ TECH.forEach(function(t){
+  if(['touch','save','print','comments','ready','onefile'].indexOf(t.k)>=0&&d.tech.indexOf(t.k)>=0){extraTech.push(t.l);}
+ });
+ extraTech.forEach(function(t,i){L.push((i+1)+'. '+t);});
+ L.push('Время на прохождение: '+d.time+' мин'+(d.fb.indexOf('lives')>=0?'; жизней: '+d.lives:''));
+ if(d.gp.indexOf('boss')>=0&&d.secretText){L.push('Секретный уровень / бонус: '+d.secretText);}
+ L.push('');
+ imagesBlock(d,L);
+ L.push('');
+ L.push('ВАЖНО: код должен быть полностью рабочим, все скрипты и стили - внутри одного HTML-файла. Сначала выдай игру целиком, затем кратко перечисли, что можно доработать.');
+ return L.join('\n');
+}
+function buildShort(d){
+ var ptKeys=usedTaskTypes(d);
+ var ptTxt=names(PT,ptKeys).join(', ')||'выбор ответа, вставка слова';
+ var imgTxt='плейсхолдеры с описанием в стиле игры + плавающая кнопка "+" в левом нижнем углу для подстановки своих картинок и кнопка "Скачать готовую игру" с закрытым кодом';
+ if(d.imgMode==='ai'){imgTxt='сгенерируй изображения (промты для каждой картинки - в отдельном блоке)'+(d.extraElems.length?', включая дополнительные элементы: '+d.extraElems.join(', '):'');}
+ if(d.imgMode==='lib'){imgTxt='картинки добавлю позже сам через Базис24 - в игре сделай плавающую кнопку "+" В ЛЕВОМ НИЖНЕМ УГЛУ: панель загрузки файлов/ссылок по всем слотам с превью и кнопка "Скачать готовую игру" (HTML со встроенными картинками и закрытым для редактирования кодом'+(d.closeCode?', обфускация':'')+')'+(d.basisNote?'; комментарий: '+d.basisNote:'')+(d.extraElems.length?'; доп. элементы: '+d.extraElems.join(', '):'');}
+ var adTxt=names(TECH.filter(function(t){return ['pc','tablet','phone'].indexOf(t.k)>=0;}),d.tech).join(' / ')||'ПК / планшет';
+ var L=[];
+ L.push('КРАТКИЙ ШАБЛОН (для быстрой отправки одним сообщением):');
+ L.push('');
+ L.push('Создай веб-'+d.gtype+' по '+d.subject+' для '+d.grade+' класса в стиле "'+d.universe+'".');
+ L.push('Визуал: '+d.visualTheme+'; цвета '+d.pal.main+', '+d.pal.bg+', акцент '+d.pal.accent+'; шрифты '+d.fonts.h+' / '+d.fonts.t+'; эффекты: '+(names(FX,d.fx).join(', ')||'без эффектов')+'.');
+ L.push('Экраны: '+names(SCREENS,d.screens).join(' -> ')+'.');
+ L.push('Заданий: '+(d.tasks.length||d.levels)+' шт. Типы заданий: '+ptTxt+'.');
+ L.push('Механика: '+names(CTRL,d.ctrl).join(', ')+'. Обратная связь: '+names(FB,d.fb).join(', ')+(d.fxx.length?'; эффекты: '+names(FXX,d.fxx).join(', '):'')+'. Награды: '+names(RW,d.rw).join(', ')+'.');
+ if(d.ch.length){L.push('Персонаж: '+names(CH,d.ch).join(', ')+'.');}
+ if(d.mg.length){L.push('Мини-игры: '+names(MG,d.mg).join(', ')+'.');}
+ if(d.gp.length){L.push('Геймплей: '+names(GP,d.gp).join(', ')+'.');}
+ L.push('Сюжет: '+d.plot);
+ L.push('Оценка: 90%+ "'+d.grade90+'", 70-89% "'+d.grade70+'", 50-69% "'+d.grade50+'", <50% "'+d.gradeLow+'".');
+ L.push('Изображения: '+imgTxt+'.');
+ L.push('Технически: один HTML-файл, адаптивно для '+adTxt+'.');
+ if(d.tasks.length){
+  L.push('Задания:');
+  d.tasks.forEach(function(t,i){
+   L.push('   '+(i+1)+') '+(t.text||'задание')+' - ответ: '+(t.ans||'-')+(t.mech?' - механика: '+mechLabel(t.mech):''));
+  });
+ }
+ if(d.shots.length){L.push('К сообщению приложены скриншоты заданий ('+d.shots.length+' шт.) - возьми задания с них.');}
+ return L.join('\n');
+}
+function buildImgPrompts(d){
+ var L=[];
+ var modeTxt='плейсхолдеры - картинки не обязательны, подставить свои можно кнопкой "+" в игре';
+ if(d.imgMode==='ai'){modeTxt='генерация ИИ - отправьте каждый промт в Qwen / Kandinsky / Шедеврум / Nano Banana, готовые файлы приложите к сообщению с промтом игры';}
+ if(d.imgMode==='lib'){modeTxt='свои картинки через Базис24 - добавляются позже прямо в игре кнопкой "+" в левом нижнем углу, затем игра скачивается с закрытым кодом';}
+ L.push('ПРОМТЫ ДЛЯ КАРТИНОК ИГРЫ');
+ L.push('');
+ L.push('Режим в конструкторе: '+modeTxt);
+ L.push('Стиль: "'+d.universe+'" - '+d.uniStyle+'; палитра '+d.pal.main+' / '+d.pal.bg+' / '+d.pal.accent+'; атмосфера '+d.mood);
+ L.push('');
+ SLOT_DEFS.forEach(function(s){
+  if(s.k==='task'){return;}
+  var st=d.slots[s.k]||{src:null,name:'',marked:false};
+  L.push('=== '+((st.src||st.marked)?'[готово]':'[пусто]')+' "'+s.n+'" ('+s.d+')');
+  L.push(imgPromptFor(s.k,s.n,s.d,d));
+  L.push('');
+ });
+ L.push('=== Картинки к заданиям ('+d.tasks.filter(function(t){return !!t.img;}).length+' из '+d.tasks.length+' отмечено)');
+ d.tasks.forEach(function(t,i){
+  L.push((t.img?'[готово]':'[пусто]')+' Задание '+(i+1)+': '+(t.text||'текст задания'));
+  L.push('Создай иллюстрацию к заданию в стиле "'+d.universe+'" ('+d.uniStyle+'), цвета '+d.pal.main+' / '+d.pal.accent+', горизонтальный формат 16:9, без текста на картинке, понятно детям '+d.age+' лет.');
+ });
+ if(d.extraElems.length){
+  L.push('');
+  L.push('=== ДОПОЛНИТЕЛЬНЫЕ ЭЛЕМЕНТЫ ('+d.extraElems.length+' шт.) - свои элементы, которые нужно сгенерировать');
+  d.extraElems.forEach(function(el,i){
+   L.push((i+1)+'. '+el);
+   L.push(extraPrompt(el,d));
+   L.push('');
+  });
+ }
+ if(d.imgMode==='lib'){
+  L.push('=== БАЗИС24: как подставить свои картинки');
+  L.push('1. В игре нажмите "+" в левом нижнем углу - откроется панель "Картинки игры".');
+  L.push('2. Загрузите файл или вставьте ссылку в нужный слот (фон, персонаж, карта, награда, финал, задания'+(d.extraElems.length?', '+d.extraElems.join(', '):'')+').');
+  L.push('3. Нажмите "Скачать готовую игру" - получите HTML-файл со всеми картинками внутри и закрытым для редактирования кодом.');
+  if(d.basisNote){L.push('Комментарий учителя: '+d.basisNote);}
+ }
+ if(d.shots.length){
+  L.push('');
+  L.push('=== Скриншоты заданий ('+d.shots.length+' шт.) приложены к сообщению: '+d.shots.map(function(s){return s.name;}).join(', '));
+ }
+ return L.join('\n');
+}
+function buildGuide(d){
+ var filled=SLOT_DEFS.filter(function(s){var st=d.slots[s.k];return st&&(st.src||st.marked);}).length;
+ var wm=d.tasks.filter(function(t){return !!t.mech;}).length;
+ var L=[];
+ L.push('КАК ИСПОЛЬЗОВАТЬ СОБРАННЫЙ ПРОМТ');
+ L.push('');
+ L.push('ШАГ 1. Откройте чатовую нейросеть: DeepSeek, Qwen, YandexGPT или GigaChat.');
+ L.push('ШАГ 2. Скопируйте вкладку «Промт игры» и отправьте в чат - получите готовый код игры в одном HTML-файле.');
+ L.push('ШАГ 3. Сохраните ответ нейросети в файл "игра.html" и откройте двойным кликом в браузере.');
+ L.push('ШАГ 4. Картинки: в игре нажмите "+" В ЛЕВОМ НИЖНЕМ УГЛУ - откроется панель слотов (фон, персонаж, карта, награда, финал, задания'+(d.extraElems.length?', '+d.extraElems.join(', '):'')+'). Загрузите файлы из Базис24 или вставьте ссылки.');
+ L.push('ШАГ 5. Нажмите "Скачать готовую игру" - получите HTML со всеми картинками внутри и закрытым для редактирования кодом. Файл работает без интернета.');
+ L.push('ШАГ 6. Задания: etapa 4 - одно поле ввода. Напишите строки в формате "тип: текст | варианты | ответ | подсказка" или нажмите "Заготовки по теме". Для каждого задания можно выбрать игровую механику (не обязательно).');
+ L.push('ШАГ 7. Если результат не идеален - не генерируйте заново, а напишите: «Доработай: добавь карту уровней, сделай задание 3 сложнее, увеличь кнопку "+" до 56px».');
+ L.push('');
+ L.push('СВОДНАЯ ТАБЛИЦА');
+ L.push('- Создать игру целиком -> «Промт игры» -> DeepSeek, Qwen, YandexGPT, GigaChat');
+ L.push('- Отправить суть одним сообщением -> вкладка «Краткая форма»');
+ L.push('- Сгенерировать иллюстрации и доп. элементы -> «Промты картинок» -> Qwen, Kandinsky, Шедеврум, Nano Banana');
+ L.push('- Свои картинки из Базис24 -> этап 5, режим «Свои через Базис24»: кнопка "+" в игре -> загрузка -> «Скачать готовую игру»');
+ L.push('');
+ L.push('ПРОВЕРЬТЕ ПЕРЕД ОТПРАВКОЙ');
+ L.push('- Тема: '+d.topic);
+ L.push('- Предмет: '+d.subject+' | Класс: '+d.grade+' | Возраст: '+d.age+' лет');
+ L.push('- Стиль: "'+d.universe+'" ('+d.mood+') - '+d.visualTheme);
+ L.push('- Тип игры: '+d.gtype);
+ L.push('- Уровней: '+(d.tasks.length||d.levels)+' | Время: '+d.time+' мин | Жизни: '+d.lives);
+ L.push('- Заданий: '+d.tasks.length+(d.tasks.length&&d.tasks.every(function(t){return !!t.text;})?' (все с текстом)':' - заполните поле ввода заданий'));
+ L.push('- Игровые механики по заданиям: '+wm+' из '+d.tasks.length+' (поле не обязательное)');
+ L.push('- Скриншоты: '+(d.shots.length?d.shots.length+' шт. (приложите их к сообщению)':'нет'));
+ L.push('- Картинки: '+(d.imgMode==='ai'?'генерация ИИ':d.imgMode==='lib'?'свои через Базис24 (кнопка "+" в игре)':'плейсхолдеры')+' | отмечено слотов: '+filled+' из '+SLOT_DEFS.length);
+ L.push('- Дополнительные элементы: '+(d.extraElems.length?d.extraElems.length+' шт. ('+d.extraElems.join(', ')+')':'не заданы'));
+ if(d.basisNote){L.push('- Комментарий по Базис24: '+d.basisNote);}
+ L.push('- Закрытый код при скачивании: '+(d.closeCode?'да (обфускация)':'нет'));
+ L.push('- Экраны: '+names(SCREENS,d.screens).join(', '));
+ L.push('- Обратная связь: '+names(FB,d.fb).join(', '));
+ L.push('- Награды: '+names(RW,d.rw).join(', '));
+ L.push('- Персонаж: '+(names(CH,d.ch).join(', ')||'без персонажа'));
+ L.push('- Мини-игры: '+(names(MG,d.mg).join(', ')||'нет'));
+ L.push('');
+ L.push('СОВЕТ: чем конкретнее заполнены задания (текст -> ответ -> подсказка), тем меньше нейросеть будет придумывать сама и тем точнее получится игра.');
+ return L.join('\n');
+}
+function progress(d){
+ var p=0;
+ if(d.topic&&d.topic!=='[тема]'){p+=15;}
+ if(d.universe){p+=8;}
+ if(d.types.length){p+=8;}
+ if(d.plot&&d.plot!=='[придумайте легенду игры]'){p+=6;}
+ p+=Math.min(22,d.tasks.length*6);
+ if(d.tasks.length&&d.tasks.every(function(t){return !!t.text;})){p+=7;}
+ if(d.tasks.some(function(t){return !!t.mech;})){p+=3;}
+ if(d.fb.length){p+=6;}
+ if(d.rw.length){p+=4;}
+ if(d.screens.length){p+=4;}
+ var filled=SLOT_DEFS.filter(function(s){var st=d.slots[s.k];return st&&(st.src||st.marked);}).length;
+ p+=Math.min(7,filled*2);
+ if(d.extraElems.length){p+=3;}
+ if(d.imgMode==='lib'&&d.basisNote){p+=2;}
+ if(d.tech.length){p+=3;}
+ if(d.shots.length){p+=4;}
+ return Math.min(100,Math.round(p));
+}
+function setTab(t){
+ activeTab=t;
+ $$('.tab').forEach(function(x){x.classList.toggle('active',x.getAttribute('data-tab')===t);});
+ var titles={prompt:'ГОТОВЫЙ ПРОМТ ИГРЫ - обновляется автоматически',short:'КРАТКАЯ ФОРМА ПРОМТА',img:'ПРОМТЫ ДЛЯ КАРТИНОК И ДОПОЛНИТЕЛЬНЫХ ЭЛЕМЕНТОВ',guide:'ИНСТРУКЦИЯ ПО ИСПОЛЬЗОВАНИЮ'};
+ byId('pvName').textContent=titles[t]||titles.prompt;
+ render();
+}
+function autoPlot(){
+ var d=collect();
+ var heroes=['юный хранитель знаний','ученик-исследователь','храбрый ученик','команда класса','верный помощник героя'];
+ var goals=['собрать утерянные артефакты','пройти все испытания и открыть финальную дверь','спасти вселенную "'+d.universe+'" от путаницы','заработать максимум баллов и получить звание мастера','расколдовать героя, решив все задания'];
+ var hero=heroes[Math.floor(Math.random()*heroes.length)];
+ var goal=goals[Math.floor(Math.random()*goals.length)];
+ var topic=(d.topic&&d.topic!=='[тема]')?d.topic:'урока';
+ return hero+' должен '+goal+'. За каждое верное задание по теме "'+topic+'" открывается новый уровень!';
+}
+function applyStyle(){
+ var si=parseInt(radioVal('style'),10)||0;
+ var s=STYLES[si]||STYLES[0];
+ var ids=['cBg','cMain','cText','cAccent','cErr','cOk'];
+ ids.forEach(function(id,k){setVal(id,s.p[k]);});
+ setVal('fHead',s.f[0]);setVal('fText',s.f[1]);setVal('fBtn',s.f[2]);
+ setVal('mood',s.m);setVal('visualTheme',s.vt);
+ $$('input[name="fx"]').forEach(function(c){c.checked=s.fx.indexOf(c.value)>=0;});
+ if(!val('plot').trim()){setVal('plot',autoPlot());}
+ render();
+}
+function render(){
+ try{
+  var d=collect();
+  show('subjectCustom',val('subject')==='Другой (вписать)');
+  setVal('ageOut',d.age+' лет');
+  var ownN=val('ownStyleName').trim();
+  byId('styleName').textContent=ownN?(ownN+' (свой)'):d.universe;
+  updateTypeCount();
+  var mechCount=d.ctrl.length+d.fb.length+d.fxx.length+d.pr.length+d.rw.length+d.ch.length+d.gp.length+d.mg.length;
+  byId('mechStat').textContent=mechCount+' выбрано';
+  renderSlots();
+  renderTasks();
+  TEXTS.prompt=buildPrompt(d);
+  TEXTS.short=buildShort(d);
+  TEXTS.img=buildImgPrompts(d);
+  TEXTS.guide=buildGuide(d);
+  byId('output').textContent=TEXTS[activeTab]||TEXTS.prompt;
+  var filled=SLOT_DEFS.filter(function(s){var st=d.slots[s.k];return st&&(st.src||st.marked);}).length;
+  var wm=d.tasks.filter(function(t){return !!t.mech;}).length;
+  byId('stLine').textContent=d.tasks.length+' '+plural(d.tasks.length,['задание','задания','заданий'])+' | '+wm+' с механикой | '+filled+' '+plural(filled,['слот','слота','слотов']);
+  var p=progress(d);
+  var pf=byId('progFill');if(pf){pf.style.width=p+'%';}
+  var pt=byId('progTxt');if(pt){pt.textContent=p+'%';}
+  byId('resSummary').textContent='«'+d.gtype+'» по '+d.subject+' для '+d.grade+' класса в стиле "'+d.universe+'". Заданий: '+d.tasks.length+' (с механикой: '+wm+'). Слотов картинок: '+filled+' из '+SLOT_DEFS.length+(d.extraElems.length?', доп. элементов: '+d.extraElems.length:'')+'. Готовность промта: '+p+'%.';
+  var allTextOk=d.tasks.length>0&&d.tasks.every(function(t){return !!t.text;});
+  var allAnsOk=d.tasks.length>0&&d.tasks.filter(function(t){return ['match','order','dnd'].indexOf(t.type)<0;}).every(function(t){return String(t.ans).trim()!=='';});
+  var ck=[
+   ['Тема, предмет и класс заполнены',!!(d.topic&&d.topic!=='[тема]')],
+   ['Стиль выбран: "'+d.universe+'"',!!d.universe],
+   ['Тип игры выбран: '+d.gtype,d.types.length>0],
+   ['Сюжет / легенда',d.plot!=='[придумайте легенду игры]'],
+   ['Экраны игры: '+names(SCREENS,d.screens).join(', '),d.screens.length>0],
+   ['Задания в поле ввода: '+d.tasks.length+' шт.',d.tasks.length>0],
+   ['У всех заданий есть текст',allTextOk],
+   ['У всех заданий есть ответ',allAnsOk],
+   ['Игровая механика выбрана для заданий: '+wm+' из '+d.tasks.length+' (не обязательно)',true],
+   ['Скриншоты заданий: '+d.shots.length+' шт.',d.shots.length>0],
+   ['Способ картинок: '+(d.imgMode==='ai'?'генерация ИИ':d.imgMode==='lib'?'свои через Базис24 + кнопка «+» в игре':'плейсхолдеры + кнопка «+» в игре'),true],
+   ['Слоты картинок отмечены: '+filled+' из '+SLOT_DEFS.length,filled>0||d.imgMode!=='lib'],
+   ['Дополнительные элементы: '+d.extraElems.length+' шт.',d.extraElems.length>0],
+   ['Комментарий по Базис24',!!d.basisNote||d.imgMode!=='lib'],
+   ['Скачивание игры с закрытым кодом',d.closeCode],
+   ['Обратная связь и награды выбраны',(d.fb.length+d.rw.length)>0],
+   ['Технические требования отмечены',d.tech.length>0]
+  ];
+  byId('checklist').innerHTML=ck.map(function(c){
+   return '<div class="ck-item '+(c[1]?'ok':'no')+'"><span class="ic">'+(c[1]?'+':'!')+'</span><span>'+esc(c[0])+'</span></div>';
+  }).join('');
+  $$('.st').forEach(function(b){
+   var n=parseInt(b.getAttribute('data-step'),10);
+   b.classList.toggle('on',n===step);
+   b.classList.toggle('done',n<step);
+  });
+  var wp=byId('wPrev');if(wp){wp.style.visibility=(step===1)?'hidden':'visible';}
+  var wn=byId('wNext');if(wn){wn.textContent=(step===7)?'Скопировать промт':'Далее ->';}
+ }catch(err){fatal(err);}
+}
+function goStep(n){
+ step=Math.max(1,Math.min(7,n));
+ $$('.pane').forEach(function(p){p.classList.remove('on');});
+ var pane=byId('pane'+step);
+ if(pane){pane.classList.add('on');}
+ window.scrollTo({top:0,behavior:'smooth'});
+ render();
+}
+var ACTIONS={
+ step:function(el){goStep(parseInt(el.getAttribute('data-step'),10)||1);},
+ goto:function(el){goStep(parseInt(el.getAttribute('data-goto'),10)||1);},
+ prev:function(){goStep(step-1);},
+ next:function(){if(step===7){ACTIONS.copyMain();}else{goStep(step+1);}},
+ plot:function(){setVal('plot',autoPlot());render();toast('Сюжет придуман');},
+ randStyle:function(){
+  var i=Math.floor(Math.random()*STYLES.length);
+  $$('input[name="style"]').forEach(function(x){x.checked=(parseInt(x.value,10)===i);});
+  applyStyle();toast('Стиль: '+STYLES[i].n);
+ },
+ useOwnStyle:function(){
+  var n=val('ownStyleName').trim();
+  if(!n){toast('Введите название своего стиля');return;}
+  render();toast('Свой стиль применён: '+n);
+ },
+ clearTypes:function(){typeSel={};renderTypes();render();toast('Выбор типов игр снят');},
+ addOwnType:function(){
+  var n=val('ownTypeName').trim();
+  if(!n){toast('Введите название своего типа игры');return;}
+  var exists=ownTypes.some(function(t){return t.n===n;});
+  if(!exists){ownTypes.push({n:n,d:val('ownTypeDesc').trim(),mech:'свои механики'});}
+  typeSel[n]=true;
+  setVal('ownTypeName','');setVal('ownTypeDesc','');
+  renderTypes();render();toast('Добавлен свой тип игры: '+n);
+ },
+ stub:function(){
+  setVal('bulk',stubText());
+  syncTasksFromBulk();
+  render();
+  toast('Заготовки по теме добавлены - отредактируйте строки и выберите механику');
+ },
+ copyImgPrompts:function(){copyText(TEXTS.img,'Промты картинок скопированы');},
+ showImgTab:function(){setTab('img');},
+ copyExtraPrompt:function(el){
+  var i=parseInt(el.getAttribute('data-ei'),10)||0;
+  var list=extraList();
+  if(list[i]){copyText(extraPrompt(list[i],collect()),'Промт элемента скопирован: '+list[i]);}
+ },
+ markAll:function(){SLOT_DEFS.forEach(function(s){slots[s.k].marked=true;});renderSlots();render();toast('Все слоты отмечены');},
+ clearImg:function(){SLOT_DEFS.forEach(function(s){slots[s.k]={src:null,name:'',marked:false};});renderSlots();render();toast('Отметки и картинки сняты');},
+ mechPreset:function(el){
+  var i=parseInt(el.getAttribute('data-mp'),10)||0;
+  var m=MECH_PRESETS[i];
+  if(!m){return;}
+  $$('#mechPresets .mini-btn').forEach(function(x){x.classList.toggle('pr',x===el);});
+  var set=function(name,keys){$$('input[name="'+name+'"]').forEach(function(inp){inp.checked=keys.indexOf(inp.value)>=0;});};
+  set('ctrl',m.ctrl);set('fb',m.fb);set('fxx',m.fx);set('pr',m.pr);set('rw',m.rw);
+  set('ch',m.ch);set('gp',m.gp);set('mg',m.mg);set('screens',m.sc);
+  setVal('livesN',m.fb.indexOf('lives')>=0?3:1);
+  render();toast('Пресет механики: '+m.n);
+ },
+ tab:function(el){setTab(el.getAttribute('data-tab'));},
+ copyActive:function(){copyText(byId('output').textContent,'Скопировано');},
+ copyMain:function(){copyText(TEXTS.prompt,'Промт игры скопирован - отправляйте в нейросеть');},
+ copyShort:function(){copyText(TEXTS.short,'Краткая форма скопирована');},
+ copyImgs:function(){copyText(TEXTS.img,'Промты картинок скопированы');},
+ dlActive:function(){
+  var d=collect();
+  var map={prompt:'промт-игры',short:'промт-кратко',img:'промты-картинок',guide:'инструкция'};
+  var nm=map[activeTab]||'promt';
+  downloadFile(nm+'-'+slug(d.topic)+'.txt',byId('output').textContent);
+  toast('Файл скачан');
+ },
+ dlTxt:function(){ACTIONS.dlAll();},
+ dlAll:function(){
+  var d=collect();
+  var all=TEXTS.prompt+'\n\n================ КРАТКАЯ ФОРМА ================\n\n'+TEXTS.short
+   +'\n\n================ ПРОМТЫ КАРТИНОК ================\n\n'+TEXTS.img
+   +'\n\n================ ИНСТРУКЦИЯ ================\n\n'+TEXTS.guide;
+  downloadFile('промт-игры-'+slug(d.topic)+'.txt',all);
+  toast('Все промты скачаны одним файлом');
+ },
+ magic:function(){
+  if(!val('bulk').trim()){setVal('bulk',stubText());}
+  syncTasksFromBulk();
+  if(!selectedTypes().length){typeSel['Викторина']=true;}
+  if(!val('plot').trim()){setVal('plot',autoPlot());}
+  var presetBtn=$('#mechPresets [data-mp="1"]');
+  if(presetBtn){ACTIONS.mechPreset(presetBtn);}
+  renderTypes();render();goStep(7);
+  toast('Промт заполнен - можно копировать и отправлять');
+ },
+ reset:function(){
+  if(!window.confirm('Сбросить конструктор?')){return;}
+  $$('input[type=text],textarea').forEach(function(i){
+   if(i.id!=='secretText'){i.value='';}
+  });
+  $$('input[type=checkbox]').forEach(function(i){i.checked=false;});
+  Object.keys(DEF).forEach(function(n){
+   $$('input[name="'+n+'"]').forEach(function(i){i.checked=!!DEF[n][i.value];});
+  });
+  tasks=[];shots=[];ownTypes=[];typeSel={};
+  SLOT_DEFS.forEach(function(s){slots[s.k]={src:null,name:'',marked:false};});
+  $$('input[name="grade"]').forEach(function(i){i.checked=(i.value==='4');});
+  $$('input[name="style"]').forEach(function(i){i.checked=(i.value==='0');});
+  var cc=byId('closeCode');if(cc){cc.checked=true;}
+  setVal('secretText','Секретный код урока: ЗНАНИЕ-СИЛА');
+  setVal('levels',6);setVal('timeMin',15);setVal('livesN',3);
+  setVal('g90','Отлично');setVal('g70','Хорошо');setVal('g50','Удовлетворительно');setVal('gLow','Требуется доработка');
+  renderTypes();applyStyle();renderTasks();drawShots();setImgMode('lib');goStep(1);
+  toast('Конструктор сброшен');
+ },
+ fab:function(){byId('preview').classList.add('open');},
+ closePv:function(){byId('preview').classList.remove('open');},
+  base:function(){openBase('ideas');},
+  ideaOpen:function(){openBase('ideas');},
+  ideaChoose:function(el){selectIdea(el.getAttribute('data-id'));},
+  ideaCopy:function(el){var g=ideaById(el.getAttribute('data-id'));copyText(ideaPrompt(g),'Полный промт игры «'+g.title+'» скопирован');},
+  ideaDl:function(el){var g=ideaById(el.getAttribute('data-id'));downloadFile('готовый-промт-'+slug(g.title)+'.txt',ideaPrompt(g));toast('Промт скачан: '+g.title);},
+  ideaApply:function(el){ideaAddToConstructor(ideaById(el.getAttribute('data-id')));},
+  ideaFav:function(el){var id=el.getAttribute('data-id');ideaFavorites[id]=!ideaFavorites[id];try{localStorage.setItem('webgame-ideas-favorites-v1',JSON.stringify(ideaFavorites));}catch(e){}drawIdeaCards();},
+  ideaFavFilter:function(){ideaFilters.onlyFav=!ideaFilters.onlyFav;var b=byId('baseBody').querySelector('[data-act=ideaFavFilter]');if(b){b.classList.toggle('active',ideaFilters.onlyFav);}drawIdeaCards();},
+  ideaImportTasks:function(){ideaTaskText=val('bulk');setVal('ideaTasks',ideaTaskText);updateIdeaPreview();toast(ideaTaskText?'Задания из конструктора подставлены':'На этапе 4 пока нет заданий');},
+ closeBase:function(){byId('baseModal').classList.remove('open');},
+ baseTab:function(el){openBase(el.getAttribute('data-b'));}
+};
+
+// === Каталог готовых промтов: отдельный сценарий, готовый к копированию ===
+var IDEA_CATEGORIES=['Все','Путешествия','Тайны','Мастерские','Аркады','Головоломки','Коллекции','Стратегии','Творчество'];
+var ideaFilters={query:'',category:'Все',pace:'Все',onlyFav:false};
+var ideaSelected='g01';
+var ideaTaskText='';
+var ideaFavorites={};
+try{ideaFavorites=JSON.parse(localStorage.getItem('webgame-ideas-favorites-v1')||'{}')||{};}catch(e){ideaFavorites={};}
+function ideaById(id){return GAME_IDEAS.find(function(g){return g.id===id;})||GAME_IDEAS[0];}
+function ideaSteps(g){return g.route.split(' → ');}
+function ideaPrompt(g){
+ var steps=ideaSteps(g);
+ var q=ideaTaskText.trim();
+ var lines=[
+  'РОЛЬ: Ты — senior frontend-разработчик, педагогический геймдизайнер и UI-аниматор. Создай полностью РАБОЧУЮ интерактивную обучающую веб-игру одним файлом HTML (CSS и JS внутри).',
+  '',
+  'НАЗВАНИЕ ИГРЫ: «'+g.title+'»',
+  'ГЛАВНОЕ УСЛОВИЕ: весь визуал, маршруты, анимации, переходы, игровые механики и правила уже определены ниже. Мне нужно заменить ТОЛЬКО БЛОК ЗАДАНИЙ в конце. Не задавай уточняющих вопросов и не придумывай учебные задания вместо моих.',
+  '',
+  '1. ВИЗУАЛ / ХУДОЖЕСТВЕННЫЙ СТИЛЬ',
+  'Стиль: '+g.style+'.',
+  'Место действия: '+g.scene+'.',
+  'Палитра: фон '+g.pal[0]+'; основной '+g.pal[1]+'; тёмный текст '+g.pal[2]+'; акцент '+g.pal[3]+'.',
+  'Сделай интерфейс похожим на законченную игру, а не на обычную форму: титульная сцена с кнопкой «Играть», объёмные игровые декорации (CSS и SVG), интерактивный маршрут, крупных игровых персонажей/предметы, мягкие анимации, красивое окно заданий, переходы и экран награды.',
+  'Все заголовки, правила и кнопки — НА РУССКОМ, крупные и хорошо читаемые. Шрифт для текста с поддержкой кириллицы. Кнопки с отчётливым состоянием наведения, нажатия и фокуса.',
+  'Сложные изображения из внешних URL не требуй: создай аккуратные векторные элементы встроенными SVG/CSS; если нужны иллюстрации, используй выразительные плейсхолдеры с описаниями и сохранением пропорций.',
+  '',
+  '2. СЮЖЕТ И КАРТА УРОВНЕЙ',
+  'Основной маршрут: '+g.route+'.',
+  'Покажи '+steps.length+' разных этапов, каждый с собственной мини-сценой, названием и тематическим значком.',
+  'Сценарий прохождения по шагам:',
+ ];
+ steps.forEach(function(s,i){lines.push('  Этап '+(i+1)+'. '+s+'. После выполнения связанных заданий открывается следующий этап с заметной анимацией перехода.');});
+ lines.push(
+  'Игрок в любой момент видит текущую точку, число решённых заданий, прогресс по этапу и общий прогресс.',
+  '',
+  '3. ТИП ИГРЫ И МЕХАНИКА',
+  'Основной жанр: '+g.gtype+'.',
+  'Главное действие игрока: '+g.mechanics+'.',
+  'Уникальный игровой приём (обязателен): '+g.twist+'.',
+  'Темп: '+g.pace+'. Если в сценарии указано «С таймером», таймер относится к короткому игровому раунду и НЕ блокирует доступ к образовательным заданиям: добавь доступный режим без ограничения времени.',
+  'Важно: игрок действительно должен ВЗАИМОДЕЙСТВОВАТЬ с объектами, а не просто нажимать «Далее» между текстовыми вопросами. Реализуй действия и состояния на JavaScript, в том числе перетаскивание на сенсорных экранах там, где оно необходимо.',
+  'Правила доступности: все действия, включая drag-and-drop, доступны альтернативным нажатием (выбрать объект → выбрать место), клавиатурой; поддержка сенсорного экрана; уважение prefers-reduced-motion.',
+  '',
+  '4. КАК ПРИВЯЗАТЬ МОИ ЗАДАНИЯ К ИГРЕ',
+  'Самостоятельно определи предмет и тему по моим заданиям. Не переиначивай их формулировки и НЕ меняй правильные ответы. Сохрани исходный порядок, если он важен.',
+  'Распредели все задания между '+steps.length+' этапами максимально равномерно. Если заданий меньше, чем этапов, не придумывай лишние вопросы — сделай часть этапов короткими сюжетными переходами без тестирования.',
+  'Поддержи форматы: выбор одного/нескольких ответов, верно/неверно, ввод, пары, сортировка, последовательность, свободный ответ. Если задания даны обычным текстом, подбирай подходящее игровое представление без потери смысла.',
+  'Если в задании НЕ указан правильный ответ, не выдумывай его и не показывай ложную автоматическую оценку: предложи самопроверку / отметку «Выполнено» или проверку учителем.',
+  'Верный ответ: видимое позитивное подтверждение, игровое действие и пополнение коллекции/прогресса. Неверный: корректная подсказка, повторная попытка, без отката уже пройденных этапов. Исключи бесконечные циклы и застревание на уровне.',
+  '',
+  '5. НАГРАДЫ И ФИНАЛ',
+  'Награда: '+g.reward+'.',
+  'Сохраняй заработанные жетоны/предметы на визуальной панели. При завершении всех заданий покажи уникальную финальную сцену, собранную коллекцию, число верных решений и кнопку «Сыграть снова».',
+  'Добавь кнопки «Правила», «Подсказка», «Назад к карте», «Заново», переключатель звука (по умолчанию выключен).',
+  '',
+  '6. ТЕХНИЧЕСКИЕ ТРЕБОВАНИЯ И ПРОВЕРКА',
+  'Выведи ПОЛНЫЙ исходный код: <!DOCTYPE html> ... </html> одним самостоятельным файлом, CSS в <style>, JS в <script>. Без сборки, фреймворков, платных сервисов и зависимостей от сети.',
+  'Сделай адаптивную верстку для ПК, планшета и телефона; игровое поле не должно выходить за края экрана; кнопки достаточно крупные для касаний.',
+  'Реализуй обработчики всех кнопок (начало, навигация, ответ, подсказка, перезапуск), корректную проверку ответа, счётчик, плавное переключение экранов, управление состоянием игры и финал. Никаких декоративных неработающих кнопок.',
+  'Проверь на синтаксические ошибки JavaScript, работу каждого переключателя, переходы без зависаний и случай с одним-единственным заданием. Не сокращай код до демонстрации — закончи полноценную работающую игру.',
+  '',
+  '7. МОИ ЗАДАНИЯ — ЭТО ЕДИНСТВЕННЫЙ БЛОК, КОТОРЫЙ Я МЕНЯЮ:',
+  '===== НАЧАЛО ЗАДАНИЙ =====',
+  q || '[ВСТАВЬТЕ СВОИ ЗАДАНИЯ СЮДА. МЕНЯТЬ ОСТАЛЬНОЙ ПРОМТ НЕ НУЖНО.]',
+  '===== КОНЕЦ ЗАДАНИЙ =====',
+  '',
+  'НАЧИНАЙ СРАЗУ С ПОЛНОГО HTML-КОДА ИГРЫ. Обязательно воплоти именно заявленные сюжет, графику, маршрут, действия, анимации и награду.'
+ );
+ return lines.join('\n');
+}
+function ideaCatalogShell(){
+ return '<div id="ideaCatalog">'
+  +'<div class="idea-intro"><div><h3>40 сценариев, готовых к созданию игры</h3><p>Выберите любой вариант. Внутри уже есть стиль, карта уровней, механики, анимации и логика прохождения. Вставить нужно только учебные задания.</p></div><span class="idea-count" id="ideaCount">40 сценариев</span></div>'
+  +'<div class="idea-toolbar"><input type="text" id="ideaSearch" aria-label="Поиск игровых сценариев" placeholder="🔍 Поиск: космос, лабиринт, поезд…" value="'+esc(ideaFilters.query)+'">'
+  +'<select id="ideaCategory" aria-label="Категория">'+IDEA_CATEGORIES.map(function(c){return '<option '+(ideaFilters.category===c?'selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>'
+  +'<select id="ideaPace" aria-label="Темп игры"><option>Все</option><option '+(ideaFilters.pace==='Без таймера'?'selected':'')+'>Без таймера</option><option '+(ideaFilters.pace==='С таймером'?'selected':'')+'>С таймером</option></select>'
+  +'<button type="button" class="idea-filter-fav'+(ideaFilters.onlyFav?' active':'')+'" data-act="ideaFavFilter">☆ Избранное</button></div>'
+  +'<div class="idea-workspace"><div class="idea-results" id="ideaResults"></div><aside class="idea-detail" id="ideaDetail"></aside></div></div>';
+}
+function drawIdeaCards(){
+ var host=byId('ideaResults');if(!host){return;}
+ var q=ideaFilters.query.trim().toLowerCase();
+ var list=GAME_IDEAS.filter(function(g){
+  return (ideaFilters.category==='Все'||g.cat===ideaFilters.category)
+    &&(ideaFilters.pace==='Все'||g.pace===ideaFilters.pace)
+    &&(!ideaFilters.onlyFav||ideaFavorites[g.id])
+    &&(!q||(g.title+' '+g.cat+' '+g.style+' '+g.gtype+' '+g.mechanics+' '+g.route).toLowerCase().indexOf(q)>=0);
+ });
+ byId('ideaCount').textContent=list.length+' из '+GAME_IDEAS.length+' сценариев';
+ host.innerHTML=list.map(function(g){
+  var liked=!!ideaFavorites[g.id];
+  return '<article class="idea-card'+(ideaSelected===g.id?' selected':'')+'" style="--bg:'+g.pal[0]+';--mn:'+g.pal[1]+';--ac:'+g.pal[3]+'">'
+   +'<div class="idea-art"><span class="idea-emoji">'+g.emoji+'</span><small>'+esc(g.cat)+'</small><button type="button" class="idea-heart'+(liked?' liked':'')+'" aria-label="'+(liked?'Убрать из избранного':'В избранное')+'" title="В избранное" data-act="ideaFav" data-id="'+g.id+'">'+(liked?'★':'☆')+'</button></div>'
+   +'<div class="idea-card-body"><h4>'+esc(g.title)+'</h4><div class="idea-tags"><span class="idea-tag">'+esc(g.gtype)+'</span><span class="idea-tag pace">'+(g.pace==='С таймером'?'⏱ На скорость':'Без таймера')+'</span></div>'
+   +'<div class="idea-small">'+esc(g.mechanics)+'</div>'
+   +'<div class="idea-card-actions"><button type="button" class="mini-btn" data-act="ideaChoose" data-id="'+g.id+'">Подробнее</button>'
+   +'<button type="button" class="mini-btn pr" data-act="ideaCopy" data-id="'+g.id+'">📋 Промт</button></div></div></article>';
+ }).join('')||'<div class="idea-empty">Ничего не найдено. Попробуйте убрать фильтры или изменить запрос.</div>';
+}
+function drawIdeaDetail(scroll){
+ var host=byId('ideaDetail');if(!host){return;}
+ var g=ideaById(ideaSelected);
+ var path=ideaSteps(g).map(function(s,i){return (i?'<span class="arr">→</span>':'')+'<span>'+esc(s)+'</span>';}).join('');
+ host.innerHTML='<div class="idea-detail-top" style="--mn:'+g.pal[1]+';--ac:'+g.pal[3]+'"><span class="symbol">'+g.emoji+'</span><div><h3>'+esc(g.title)+'</h3><p>'+esc(g.cat)+' · '+esc(g.gtype)+' · '+esc(g.pace)+'</p></div></div>'
+  +'<dl><dt>Оформление</dt><dd>'+esc(g.style)+'</dd><dt>Маршрут игры</dt><dd><div class="idea-route">'+path+'</div></dd>'
+  +'<dt>Как играет ученик</dt><dd>'+esc(g.mechanics)+'</dd><dt>Особенность</dt><dd>'+esc(g.twist)+'</dd><dt>Финал</dt><dd>'+esc(g.reward)+'</dd></dl>'
+  +'<label class="label" for="ideaTasks" style="margin-top:14px">📄 Ваши задания (можно вставить прямо здесь)</label>'
+  +'<textarea id="ideaTasks" placeholder="Вставьте задания из урока. Если оставить поле пустым, в промте будет готовое место для вставки.">'+esc(ideaTaskText)+'</textarea>'
+  +'<div class="idea-actions"><button class="mini-btn" type="button" data-act="ideaImportTasks">↙ Из этапа 4</button><button class="mini-btn" type="button" data-act="ideaDl" data-id="'+g.id+'">⬇ Скачать .txt</button>'
+  +'<button class="mini-btn pr" type="button" data-act="ideaCopy" data-id="'+g.id+'">📋 Скопировать промт</button><button class="mini-btn" type="button" data-act="ideaApply" data-id="'+g.id+'">⚙ В конструктор</button></div>'
+  +'<div class="label">Предпросмотр полного промта</div><pre class="idea-promt-preview" id="ideaPromptPreview"></pre>'
+  +'<p class="idea-tip">Промт уже содержит сюжет, стилистику, уровни, механики и технические требования. Менять нужно лишь задания; без них копируется специальный шаблонный блок.</p>';
+ updateIdeaPreview();
+ if(scroll&&window.innerWidth<=900){host.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+function updateIdeaPreview(){var x=byId('ideaPromptPreview');if(x){x.textContent=ideaPrompt(ideaById(ideaSelected));}}
+function showIdeas(){
+ var body=byId('baseBody');
+ if(!body.querySelector('#ideaCatalog')){body.innerHTML=ideaCatalogShell();}
+ drawIdeaCards();drawIdeaDetail(false);
+}
+function selectIdea(id){ideaSelected=ideaById(id).id;drawIdeaCards();drawIdeaDetail(true);}
+function ideaAddToConstructor(g){
+ // Пользовательские задания при выборе сценария не стираются.
+ if(ideaTaskText.trim()&&!val('bulk').trim()){setVal('bulk',ideaTaskText.trim());syncTasksFromBulk();}
+ setVal('ownStyleName',g.style.split(',')[0]);
+ setVal('ownStyleDesc',g.style+'; '+g.scene);
+ setVal('visualTheme',g.scene);
+ var colorIds=['cBg','cMain','cText','cAccent'];
+ colorIds.forEach(function(k,i){setVal(k,g.pal[i]);});
+ setVal('fHead','Russo One');setVal('fText','Inter');setVal('fBtn','Russo One');
+ setVal('plot','«'+g.title+'». Маршрут: '+g.route+'.\nИгровые действия: '+g.mechanics+'.\nУникальная особенность: '+g.twist+'.\nНаграда: '+g.reward+'. Не придумывай дополнительные учебные задания.');
+ setVal('levels',ideaSteps(g).length);
+ var known=GTYPES.some(function(t){return t.n===g.gtype;});
+ if(!known&&!ownTypes.some(function(t){return t.n===g.gtype;})){ownTypes.push({n:g.gtype,d:'Авторский игровой сценарий',mech:g.mechanics});}
+ typeSel={};typeSel[g.gtype]=true;renderTypes();
+ var index=(g.preset==='Спокойно')?0:(g.preset==='Приключение'?1:2);
+ var preset=byId('mechPresets').querySelector('[data-mp="'+index+'"]');
+ if(preset){ACTIONS.mechPreset(preset);}
+ setImgMode('ph');
+ byId('baseModal').classList.remove('open');
+ goStep(1);render();
+ toast('«'+g.title+'» перенесена в конструктор, задания сохранены');
+}
+
+function tableFrom(rows,heads){
+ var h='<table class="base"><tr>'+heads.map(function(x){return '<th>'+esc(x)+'</th>';}).join('')+'</tr>';
+ rows.forEach(function(r){h+='<tr>'+r.map(function(c){return '<td>'+c+'</td>';}).join('')+'</tr>';});
+ return h+'</table>';
+}
+function baseContent(tab){
+ if(tab==='ideas'){return ideaCatalogShell();}
+ if(tab==='uni'){
+  return tableFrom(STYLES.map(function(s){
+   var sw=s.p.slice(0,4).map(function(c){
+    return '<span style="display:inline-block;width:16px;height:16px;border-radius:4px;background:'+c+';border:1px solid rgba(0,0,0,.15);margin-right:3px;vertical-align:-3px"></span>';
+   }).join('');
+   return [esc(s.c),'<b>'+esc(s.n)+'</b>',esc(s.d),esc(s.m),sw];
+  }),['Категория','Стиль / вселенная','Описание','Атмосфера','Палитра']);
+ }
+ if(tab==='types'){
+  return tableFrom(allTypes().map(function(t){return ['<b>'+esc(t.n)+'</b>',esc(t.d),esc(t.mech)];}),['Тип игры','Описание','Примеры механик']);
+ }
+ if(tab==='mech'){
+  return tableFrom(MECH_TABLE.map(function(r){return ['<b>'+esc(r[0])+'</b>','<code>'+esc(r[1])+'</code>',esc(r[2])];}),['Механика','Реализация в браузере','Пример']);
+ }
+ if(tab==='fonts'){
+  var rows=[];
+  Object.keys(FONTS).forEach(function(gr){
+   FONTS[gr].forEach(function(f,i){
+    rows.push([(i===0?'<b>'+esc(gr)+'</b>':''),'<b>'+esc(f)+'</b>',esc(FONT_STYLE[f]||'-'),esc(FONT_USE[f]||'-')]);
+   });
+  });
+  return tableFrom(rows,['Категория','Шрифт (Google Fonts)','Стиль','Когда использовать'])
+   +'<div class="hint">Press Start 2P и Space Mono не содержат кириллицу - для русского текста берите Caveat, Marck Script, Russo One, Inter, Lora.</div>';
+ }
+ if(tab==='subj'){
+  return tableFrom(SUBJ_TABLE.map(function(r){return ['<b>'+esc(r[0])+'</b>',esc(r[1]),esc(r[2]),esc(r[3])];}),['Предмет','Тип задания','Пример реализации','Класс']);
+ }
+ return tableFrom(ALG_TABLE.map(function(r){return ['<b>'+esc(r[0])+'</b>',esc(r[1]),esc(r[2])];}),['Шаг','Что сделать','Пример']);
+}
+function openBase(tab){
+ var t=tab||'ideas';
+ byId('baseModal').classList.add('open');
+ $$('#baseTabs .mtab').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-b')===t);});
+ byId('baseBody').innerHTML=baseContent(t);
+ if(t==='ideas'){showIdeas();}
+}
+function nearest(node,sel){
+ return (node&&node.closest)?node.closest(sel):null;
+}
+document.addEventListener('click',function(e){
+ try{
+  var t=e.target;
+  var actEl=nearest(t,'[data-act]');
+  if(actEl){
+   var act=actEl.getAttribute('data-act');
+   if(ACTIONS[act]){e.preventDefault();ACTIONS[act](actEl);return;}
+  }
+  var slot=nearest(t,'.slot');
+  if(slot){
+   if(slot.hasAttribute('data-extra')){return;}
+   var key=slot.getAttribute('data-slot');
+   var def=null;
+   SLOT_DEFS.forEach(function(s){if(s.k===key){def=s;}});
+   if(!def){return;}
+   if(nearest(t,'.slot-plus')){slot.classList.toggle('open');return;}
+   if(nearest(t,'.slot-rm')){slots[key]={src:null,name:'',marked:false};renderSlots();render();toast('Слот очищен');return;}
+   if(nearest(t,'.s-mark')){
+    slots[key].marked=!slots[key].marked;
+    renderSlots();render();
+    toast(slots[key].marked?('Отмечено: '+def.n):'Отметка снята');
+    return;
+   }
+   if(nearest(t,'.s-file')){var fi=slot.querySelector('.s-input');if(fi){fi.click();}return;}
+   if(nearest(t,'.s-ok')){
+    var inp=slot.querySelector('.s-url');
+    var v=inp?inp.value.trim():'';
+    if(v){slots[key]={src:v,name:'',marked:true};renderSlots();render();toast('Картинка по ссылке добавлена');}
+    return;
+   }
+   if(nearest(t,'.s-prompt')){copyText(imgPromptFor(key,def.n,def.d,collect()),'Промт картинки скопирован');return;}
+   return;
+  }
+  var rm=nearest(t,'.shot .rm');
+  if(rm){shots.splice(parseInt(rm.getAttribute('data-i'),10),1);drawShots();render();return;}
+  if(nearest(t,'#drop')){byId('fileInput').click();return;}
+  if(t.id==='baseModal'){byId('baseModal').classList.remove('open');}
+ }catch(err){fatal(err);}
+});
+document.addEventListener('change',function(e){
+ try{
+  var t=e.target;
+  if(t.id==='ideaCategory'){ideaFilters.category=t.value;drawIdeaCards();return;}
+  if(t.id==='ideaPace'){ideaFilters.pace=t.value;drawIdeaCards();return;}
+  if(t.id==='ideaTasks'){ideaTaskText=t.value;updateIdeaPreview();return;}
+  if(t.name==='style'){applyStyle();return;}
+  if(t.name==='imgmode'){setImgMode(t.value);render();return;}
+  if(t.name==='gtype'){syncTypeSel();render();return;}
+  if(t.classList.contains('t-mech')){readTaskMechs();render();return;}
+  if(t.classList.contains('s-input')){
+   var slot=nearest(t,'.slot');
+   if(!slot){return;}
+   var key=slot.getAttribute('data-slot');
+   var f2=t.files&&t.files[0];
+   if(f2){
+    var r=new FileReader();
+    r.onload=function(ev){slots[key]={src:ev.target.result,name:f2.name,marked:true};renderSlots();render();toast('Картинка добавлена: '+f2.name);};
+    r.readAsDataURL(f2);
+   }
+   return;
+  }
+  if(t.id==='fileInput'){addShots(t.files);t.value='';return;}
+  render();
+ }catch(err){fatal(err);}
+});
+var renderTimer=null;
+document.addEventListener('input',function(e){
+ var t=e.target;
+ if(t.id==='ideaSearch'){ideaFilters.query=t.value;drawIdeaCards();return;}
+ if(t.id==='ideaTasks'){ideaTaskText=t.value;updateIdeaPreview();return;}
+ if(t.id==='styleSearch'){
+  var q=t.value.trim().toLowerCase();
+  $$('#styleGrid .pick').forEach(function(el){
+   var i=parseInt(el.getAttribute('data-idx'),10);
+   var s=STYLES[i];
+   if(!s){return;}
+   var hay=(s.n+' '+s.d+' '+s.c+' '+s.m+' '+s.vt).toLowerCase();
+   el.style.display=(!q||hay.indexOf(q)>=0)?'':'none';
+  });
+  return;
+ }
+ if(t.id==='typeSearch'){renderTypes();return;}
+ if(nearest(t,'.slot')){return;}
+ if(t.id==='extraElems'){
+  clearTimeout(renderTimer);
+  renderTimer=setTimeout(function(){renderSlots();render();},400);
+  return;
+ }
+ if(t.id==='bulk'){
+  clearTimeout(renderTimer);
+  renderTimer=setTimeout(function(){readTaskMechs();syncTasksFromBulk();render();},350);
+  return;
+ }
+ clearTimeout(renderTimer);
+ renderTimer=setTimeout(render,250);
+});
+function addShots(list){
+ if(!list){return;}
+ Array.prototype.slice.call(list).forEach(function(f){
+  if(!/^image\//.test(f.type)||shots.length>=10){return;}
+  var r=new FileReader();
+  r.onload=function(ev){shots.push({name:f.name,url:ev.target.result});drawShots();render();toast('Скриншот добавлен: '+f.name);};
+  r.readAsDataURL(f);
+ });
+}
+document.addEventListener('keydown',function(e){
+ if(e.key==='Escape'){byId('baseModal').classList.remove('open');}
+});
+function init(){
+ buildBasics();
+ SLOT_DEFS.forEach(function(s){slots[s.k]={src:null,name:'',marked:false};});
+ typeSel['Викторина']=true;
+ renderTypes();
+ syncTasksFromBulk();
+ drawShots();
+ applyStyle();
+ setImgMode('lib');
+ setTab('prompt');
+ goStep(1);
+ var dropEl=byId('drop');
+ if(dropEl){
+  ['dragover','dragenter'].forEach(function(ev){
+   dropEl.addEventListener(ev,function(e){e.preventDefault();dropEl.classList.add('over');});
+  });
+  ['dragleave','drop'].forEach(function(ev){
+   dropEl.addEventListener(ev,function(e){e.preventDefault();dropEl.classList.remove('over');});
+  });
+  dropEl.addEventListener('drop',function(e){addShots(e.dataTransfer?e.dataTransfer.files:null);});
+  dropEl.addEventListener('keydown',function(e){
+   if(e.key==='Enter'||e.key===' '){e.preventDefault();byId('fileInput').click();}
+  });
+ }
+ render();
+}
+function start(){
+ try{init();}catch(err){fatal(err);}
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',start);}
+else{start();}
+})();
+</script>
+</body>
+</html>
